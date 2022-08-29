@@ -39,6 +39,11 @@ module.exports = {
 					{
 						from: path.resolve(`src/manifest.json`),
 						to: `${path.resolve(buildDir)}/manifest.json`,
+						transform: {
+							transformer(content, fileName) {
+								return content.toString().replace('PACKAGE_VERSION', require('./package.json').version);
+							}
+						}
 					},
 					{
 						from: path.resolve(`src/assets/icons`),

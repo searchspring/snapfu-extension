@@ -2,7 +2,7 @@
 	"manifest_version": 3,
 	"name": "snapfu",
 	"description": "searchspring snap extension",
-	"version": "1.3.0",
+	"version": "PACKAGE_VERSION",
 	"permissions": ["storage", "webRequest", "declarativeNetRequest", "activeTab", "tabs"],
 	"background": {
 		"service_worker": "/js/background.js"
@@ -23,7 +23,7 @@
 	"web_accessible_resources": [
 		{
 			"resources": ["/js/loader.js", "/js/scraper.js"],
-			"matches": ["https://*/*"]
+			"matches": ["http://*/*", "https://*/*"]
 		}
 	]
 }
