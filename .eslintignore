@@ -1,0 +1,7 @@
+**/coverage/**
+**/dist/**
+**/release/**
+**/test/**
+**/mocks/**
+**/__tests__/**
+**/__mocks__/**

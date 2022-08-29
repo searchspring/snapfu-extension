@@ -1,0 +1,69 @@
+{
+	"name": "@searchspring/snapfu-extension-chrome",
+	"version": "1.2.0",
+	"private": true,
+	"repository": "https://github.com/searchspring/snapfu-extension-chrome",
+	"scripts": {
+		"clean": "rm -rf ./node_modules && rm ./package-lock.json",
+		"commit": "cz",
+		"serve": "vue-cli-service serve",
+		"build": "vue-cli-service build",
+		"test": "vue-cli-service test:unit",
+		"format": "prettier --write src *.json",
+		"format-check": "prettier --check src *.json",
+		"lint": "vue-cli-service lint",
+		"dev": "vue-cli-service  --env.NODE_ENV=development build --watch --mode development",
+		"prepare": "husky install",
+		"prerelease": "npm run build && git add -A release",
+		"release": "standard-version -a",
+		"postrelease": "git push && git push --tags"
+	},
+	"dependencies": {
+		"@fortawesome/fontawesome-svg-core": "^6.1.1",
+		"@fortawesome/free-solid-svg-icons": "^6.1.1",
+		"@fortawesome/vue-fontawesome": "^3.0.0-4",
+		"core-js": "^3.8.3",
+		"vue": "^3.2.13"
+	},
+	"prettier": "@searchspring/prettier",
+	"devDependencies": {
+		"@searchspring/prettier": "1.0.2",
+		"@types/chrome": "^0.0.179",
+		"@types/jest": "^27.0.1",
+		"@typescript-eslint/eslint-plugin": "^5.4.0",
+		"@typescript-eslint/parser": "^5.4.0",
+		"@vue/cli-plugin-babel": "~5.0.0",
+		"@vue/cli-plugin-eslint": "~5.0.0",
+		"@vue/cli-plugin-typescript": "~5.0.0",
+		"@vue/cli-plugin-unit-jest": "~5.0.0",
+		"@vue/cli-service": "~5.0.0",
+		"@vue/eslint-config-typescript": "^9.1.0",
+		"@vue/test-utils": "^2.0.0-0",
+		"@vue/vue3-jest": "^27.0.0-alpha.1",
+		"babel-jest": "^27.0.6",
+		"cz-conventional-changelog": "3.3.0",
+		"eslint": "^7.32.0",
+		"eslint-config-prettier": "8.5.0",
+		"eslint-plugin-vue": "^8.0.3",
+		"husky": "7.0.4",
+		"jest": "27.5.1",
+		"jsdom": "19.0.0",
+		"lint-staged": "12.4.1",
+		"prettier": "2.6.2",
+		"sass": "^1.32.7",
+		"sass-loader": "^12.0.0",
+		"standard-version": "9.5.0",
+		"ts-jest": "^27.0.4",
+		"typescript": "~4.5.5"
+	},
+	"lint-staged": {
+		"*.{js,ts,tsx,vue}": [
+			"prettier --write"
+		]
+	},
+	"config": {
+		"commitizen": {
+			"path": "./node_modules/cz-conventional-changelog"
+		}
+	}
+}
