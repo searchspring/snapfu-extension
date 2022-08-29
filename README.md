@@ -23,7 +23,7 @@ The Searchspring Snap Extension should now be available within Chrome.
 
 When you click on the Searchspring Extension this should pop up:
 
-![Chrome Extension](/img/readmePic.PNG?raw=true)
+![Chrome Extension](/img/readmePic.png?raw=true)
 
 You can enable the extension by clicking the toggle in the header. 
 
