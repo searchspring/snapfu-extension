@@ -53,8 +53,8 @@
 			</div>
 
 			<div class="option footer">
-				<span class="version">v{{ props.version }}</span>
-				<a href="https://github.com/searchspring/snapfu-extension-chrome" target="_blank"><img class="github" src="../assets/github.svg" /></a>
+				<span class="version">(beta) v{{ props.version }}</span>
+				<a href="https://github.com/searchspring/snapfu-extension" target="_blank"><img class="github" src="../assets/github.svg" /></a>
 			</div>
 		</div>
 

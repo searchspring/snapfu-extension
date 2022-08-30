@@ -1,8 +1,8 @@
 {
-	"name": "@searchspring/snapfu-extension-chrome",
+	"name": "@searchspring/snapfu-extension",
 	"version": "1.2.1",
 	"private": true,
-	"repository": "https://github.com/searchspring/snapfu-extension-chrome",
+	"repository": "https://github.com/searchspring/snapfu-extension",
 	"scripts": {
 		"clean": "rm -rf ./node_modules && rm ./package-lock.json",
 		"commit": "cz",
@@ -14,9 +14,8 @@
 		"lint": "vue-cli-service lint",
 		"dev": "vue-cli-service  --env.NODE_ENV=development build --watch --mode development",
 		"prepare": "husky install",
-		"prerelease": "npm run build && git add -A release",
 		"release": "standard-version -a",
-		"postrelease": "git push && git push --tags"
+		"postrelease": "npm run build && git add -A release && git push && git push --tags"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-svg-core": "^6.1.1",
