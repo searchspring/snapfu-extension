@@ -15,7 +15,6 @@
 		"dev": "vue-cli-service  --env.NODE_ENV=development build --watch --mode development",
 		"prepare": "husky install",
 		"release": "standard-version -a",
-		"postbump": "npm run build && git add -A release",
 		"postrelease": "git push && git push --tags"
 	},
 	"dependencies": {
@@ -64,6 +63,11 @@
 	"config": {
 		"commitizen": {
 			"path": "./node_modules/cz-conventional-changelog"
+		}
+	},
+	"standard-version": {
+		"scripts": {
+			"postbump": "npm run build && git add -A release"
 		}
 	}
 }
