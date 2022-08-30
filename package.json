@@ -15,7 +15,8 @@
 		"dev": "vue-cli-service  --env.NODE_ENV=development build --watch --mode development",
 		"prepare": "husky install",
 		"release": "standard-version -a",
-		"postrelease": "npm run build && git add -A release && git push && git push --tags"
+		"postbump": "npm run build && git add -A release",
+		"postrelease": "git push && git push --tags"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-svg-core": "^6.1.1",
