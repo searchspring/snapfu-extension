@@ -43,10 +43,10 @@ function updateIcon(config: StoredData) {
 
 function checkForIntercepts(config: StoredData) {
 	const rawIntercepts = config.settings.intercepts.split('\n')?.filter((a) => (a.length ? a.trim() : false));
-	const intercepts = rawIntercepts.map((intercept, index) => ({
+	const intercepts: chrome.declarativeNetRequest.Rule[] = rawIntercepts.map((intercept, index) => ({
 		id: index + 1,
 		priority: index + 1,
-		action: { type: 'block' },
+		action: { type: chrome.declarativeNetRequest.RuleActionType.BLOCK },
 		condition: { urlFilter: intercept, resourceTypes: ['script'] },
 	}));
 
@@ -55,17 +55,28 @@ function checkForIntercepts(config: StoredData) {
 		intercepts.push({
 			id: intercepts.length + 1,
 			priority: intercepts.length + 1,
-			action: { type: 'allow' },
-			condition: { urlFilter: config.bundle.url, resourceTypes: ['script'] },
+			action: { type: chrome.declarativeNetRequest.RuleActionType.ALLOW },
+			condition: { urlFilter: config.bundle.url, resourceTypes: [chrome.declarativeNetRequest.ResourceType.SCRIPT] },
 		});
 	}
+
+	intercepts.push({
+		id: intercepts.length + 2,
+		priority: 1,
+		action: { 
+			type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+			responseHeaders: [
+				{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.SET, value: "" },
+			],
+		},
+		condition: { urlFilter: "*", resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME] },
+		
+	})
 
 	chrome.declarativeNetRequest.getDynamicRules((rules) => {
 		const existingRulesToRemove = rules.map((rule) => rule.id);
 		const addRules = config.settings.enabled ? intercepts : [];
 		chrome.declarativeNetRequest.updateDynamicRules({
-			// eslint-disable-next-line
-			// @ts-ignore
 			addRules: addRules,
 			removeRuleIds: existingRulesToRemove || [],
 		});
