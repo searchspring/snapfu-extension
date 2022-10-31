@@ -6,12 +6,12 @@ async function injectCode(src: string) {
 	if (config.settings.enabled) {
 		const scriptUrl = config.bundle.url;
 		const context = config.bundle.context;
-		const mergeContext = config.bundle.mergeContext;
+		const mergeContextOption = config.bundle.mergeContext;
 
 		const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[src*="snapui.searchspring.io"]'));
 
 		// remove contexts if not merging
-		if (!mergeContext) {
+		if (!mergeContextOption) {
 			scripts.forEach((script) => {
 				script.innerHTML = '';
 			});
@@ -29,7 +29,7 @@ async function injectCode(src: string) {
 
 		// merge script context if configured
 		let scriptContext = context;
-		if (mergeContext) {
+		if (mergeContextOption && currentContext) {
 			scriptContext = currentContext + '\n' + context;
 		}
 
@@ -38,8 +38,9 @@ async function injectCode(src: string) {
 			script.src = src;
 			script.id = 'snapfu-script';
 			script.setAttribute('url', scriptUrl);
-			script.innerHTML = scriptContext;
-
+			if (scriptContext){
+				script.innerHTML = scriptContext;
+			}
 			(document.head || document.documentElement).appendChild(script);
 		}
 	}
