@@ -27,6 +27,15 @@ async function injectCode(src: string) {
 
 		const currentContext = script?.innerHTML;
 
+		// grab attributes from script (if found)
+		const integrationAttributes = Object.values(script?.attributes || {}).reduce((attrs: Record<string, string>, attr) => {
+			const blackList = ['id', 'src', 'type', 'defer', 'async'];
+			const name = attr.nodeName;
+			const value = script.getAttribute(name);
+			if (value && !blackList.includes(name)) attrs[name] = value;
+			return attrs;
+		}, {});
+
 		// merge script context if configured
 		let scriptContext = context;
 		if (mergeContextOption && currentContext) {
@@ -38,6 +47,12 @@ async function injectCode(src: string) {
 			script.src = src;
 			script.id = 'snapfu-script';
 			script.setAttribute('url', scriptUrl);
+			
+			// add element attributes from integration script (if found)
+			Object.keys(integrationAttributes).forEach((key) => {
+				script.setAttribute(key, integrationAttributes[key]);
+			});
+
 			if (scriptContext){
 				script.innerHTML = scriptContext;
 			}

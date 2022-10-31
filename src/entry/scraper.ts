@@ -24,6 +24,7 @@ setInterval(() => {
 		// if we don't find searchspring global on window try looking in iframes
 		const iframes = document.querySelectorAll('iframe');
 		browserGlobalSpace = Array.from(iframes)
+			.filter((iframe) => iframe.src?.includes(window.location.host))
 			.filter((iframe) => iframe.contentWindow?.searchspring)
 			?.pop()?.contentWindow;
 	}
