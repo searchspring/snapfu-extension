@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/searchspring/snapfu-extension/compare/v1.2.3...v1.3.0) (2022-10-31)
+
+
+### Features
+
+* add script attributes ([f465556](https://github.com/searchspring/snapfu-extension/commit/f4655563f098b481905d0a3c4ae81f8b64fd5595))
+
+
+### Bug Fixes
+
+* content-security-policy header on document to allow bundle to load ([2c3616d](https://github.com/searchspring/snapfu-extension/commit/2c3616df689a48239c7e23b858c0942e02a4a83a))
+* **inject:** adding support for injecting and scraping iframes (for Bigcommerce) ([7edfa30](https://github.com/searchspring/snapfu-extension/commit/7edfa306989a019513993a363750b7df58b31b17))
+
 ### [1.2.3](https://github.com/searchspring/snapfu-extension/compare/v1.2.2...v1.2.3) (2022-08-30)
 
 ### [1.2.2](https://github.com/searchspring/snapfu-extension/compare/v1.2.1...v1.2.2) (2022-08-30)

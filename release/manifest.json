@@ -2,7 +2,7 @@
 	"manifest_version": 3,
 	"name": "snapfu",
 	"description": "searchspring snap extension",
-	"version": "1.2.3",
+	"version": "1.3.0",
 	"permissions": ["storage", "webRequest", "declarativeNetRequest", "activeTab", "tabs"],
 	"background": {
 		"service_worker": "/js/background.js"
