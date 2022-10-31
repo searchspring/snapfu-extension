@@ -29,10 +29,10 @@ async function injectCode(src: string) {
 
 		// grab attributes from script (if found)
 		const integrationAttributes = Object.values(script?.attributes || {}).reduce((attrs: Record<string, string>, attr) => {
-			const blackList = ['id', 'src', 'type', 'defer', 'async'];
+			const blocklist = ['id', 'src', 'type', 'defer', 'async'];
 			const name = attr.nodeName;
 			const value = script.getAttribute(name);
-			if (value && !blackList.includes(name)) attrs[name] = value;
+			if (value && !blocklist.includes(name)) attrs[name] = value;
 			return attrs;
 		}, {});
 
