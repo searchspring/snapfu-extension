@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.1](https://github.com/searchspring/snapfu-extension/compare/v1.3.0...v1.3.1) (2022-11-14)
+
+
+### Bug Fixes
+
+* add bundle upon iframe page navigation ([2ef4904](https://github.com/searchspring/snapfu-extension/commit/2ef4904c96d50cf1ba6ee82b0fc303097372cb93))
+* **scraper.ts:** fix for google docs ([379a300](https://github.com/searchspring/snapfu-extension/commit/379a30027f00d5623b7c3b25efa81e6b6706560c))
+
 ## [1.3.0](https://github.com/searchspring/snapfu-extension/compare/v1.2.3...v1.3.0) (2022-10-31)
 
 
