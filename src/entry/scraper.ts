@@ -18,12 +18,13 @@ setInterval(() => {
 		const event = new CustomEvent('snapfu-scrape', { detail: { timestamp: Date.now() } });
 		document.dispatchEvent(event);
 	}
-
+	const iframeBlockList = ["google.com"]
 	let browserGlobalSpace: Window | null | undefined = window;
 	if (!browserGlobalSpace?.searchspring) {
 		// if we don't find searchspring global on window try looking in iframes
 		const iframes = document.querySelectorAll('iframe');
 		browserGlobalSpace = Array.from(iframes)
+			.filter((iframe) => iframeBlockList.filter(domain => iframe?.src.includes(domain))?.length == 0)
 			.filter((iframe) => iframe.src?.includes(window.location.host))
 			.filter((iframe) => iframe.contentWindow?.searchspring)
 			?.pop()?.contentWindow;
