@@ -1,4 +1,4 @@
-# Searchspring Snapfu Extension (beta)
+# Searchspring Snapfu Extension
 This extension allows us to inject our script on to a clients site if they don't have our script. Or if they do we can remove their current script and add a script in any configuration we want. You can also redirect the script on a live client site to run off your local bundle.js.
 
 ## Installing in Chrome
