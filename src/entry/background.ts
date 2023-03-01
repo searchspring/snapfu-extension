@@ -60,18 +60,18 @@ function checkForIntercepts(config: StoredData) {
 		});
 	}
 
-	intercepts.push({
-		id: intercepts.length + 2,
-		priority: 1,
-		action: { 
-			type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-			responseHeaders: [
-				{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.SET, value: "" },
-			],
-		},
-		condition: { urlFilter: "*", resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME] },
-		
-	})
+	//  ** modifying the response headers to remove the csp is no longer supported. 
+	// intercepts.push({
+	// 	id: intercepts.length + 2,
+	// 	priority: 1,
+	// 	action: { 
+	// 		type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+	// 		responseHeaders: [
+	// 			{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.SET, value: "" },
+	// 		],
+	// 	},
+	// 	condition: { urlFilter: "*", resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME] },
+	// })
 
 	chrome.declarativeNetRequest.getDynamicRules((rules) => {
 		const existingRulesToRemove = rules.map((rule) => rule.id);
