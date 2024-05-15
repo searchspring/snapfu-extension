@@ -6,6 +6,7 @@ const script = document.createElement('script');
 script.id = 'searchspring-snapfu-script';
 script.src = url || '';
 script.innerHTML = context.trim();
+script.setAttribute('external', loadScript?.getAttribute('external') || ''); //for v3 scripts
 
 const CHECK_DELAY = 4000;
 const locateAndInject = () => {
@@ -13,7 +14,7 @@ const locateAndInject = () => {
 	setInterval(() => {
 		// try to find the integration script block and inject in same parent if found
 		let browserGlobalSpace: Window | null | undefined = window;
-		const snapScriptSelector = 'script[id^=searchspring], script[src*="snapui.searchspring.io"]';
+		const snapScriptSelector = 'script[id^=searchspring], script[src*="snapui.searchspring.io"], script[src*="searchspring.catalog.js"]';
 		const snapScript = browserGlobalSpace.document.querySelector(snapScriptSelector);
 
 		if (!snapScript) {

@@ -8,12 +8,20 @@ async function injectCode(src: string) {
 		const context = config.bundle.context;
 		const mergeContextOption = config.bundle.mergeContext;
 
-		const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[src*="snapui.searchspring.io"]'));
+		const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[src*="snapui.searchspring.io"], script[src*="searchspring.catalog.js"]'));
 
 		// remove contexts if not merging
 		if (!mergeContextOption) {
 			scripts.forEach((script) => {
-				script.innerHTML = '';
+				if(checkV3Script(script)){
+					const attrsToKeep = ['id', 'src', 'type', 'defer', 'async', 'hide-content'];
+					Object.entries(script.attributes)
+						.map(attr=>attr[1].name)
+						.filter(attr=>!attrsToKeep.includes(attr))
+						.forEach(attr=>script.removeAttribute(attr))
+				} else {
+					script.innerHTML = '';
+				}
 			});
 		}
 
@@ -26,6 +34,8 @@ async function injectCode(src: string) {
 			.pop() as HTMLScriptElement;
 
 		const currentContext = script?.innerHTML;
+
+		const oldScript = script;
 
 		// grab attributes from script (if found)
 		const integrationAttributes = Object.values(script?.attributes || {}).reduce((attrs: Record<string, string>, attr) => {
@@ -46,7 +56,15 @@ async function injectCode(src: string) {
 			const script = document.createElement('script');
 			script.src = src;
 			script.id = 'snapfu-script';
-			script.setAttribute('url', scriptUrl);
+
+			const isV3Script = checkV3Script(oldScript);
+			if(isV3Script){
+				script.setAttribute('url', oldScript.getAttribute('src') + '&snapfu'); //'&snapfu' evades default network intercept
+				oldScript.setAttribute('external', scriptUrl); //scriptURL is now the local angular.js resource
+				script.setAttribute('external', scriptUrl);
+			} else {
+				script.setAttribute('url', scriptUrl);
+			}
 			
 			// add element attributes from integration script (if found)
 			Object.keys(integrationAttributes).forEach((key) => {
@@ -55,6 +73,17 @@ async function injectCode(src: string) {
 
 			if (scriptContext){
 				script.innerHTML = scriptContext;
+
+				// add script context as inline attributes on new v3 script if applicable
+				if(isV3Script){
+					const contextObj = getContextFromString(scriptContext);
+					const mergedContextObj = {...oldScript, ...contextObj};
+					Object.keys(mergedContextObj).forEach((key) => {
+						const value = (typeof mergedContextObj[key] == 'object') ? JSON.stringify(mergedContextObj[key]) : mergedContextObj[key];
+						script.setAttribute(key, value);
+						oldScript.setAttribute(key, value);
+					});
+				}
 			}
 			(document.head || document.documentElement).appendChild(script);
 		}
@@ -69,6 +98,29 @@ function addScript(src: string) {
 
 		(document.head || document.documentElement).appendChild(script);
 	}
+}
+
+// convert context variables to an object for v3 scripts
+function getContextFromString(contextString : string) {
+	// find starting & ending indicies of new context variables
+	const indicies : number[] = [];
+	const parts = contextString.split(/(\n|;)/);
+	parts.forEach((part,i) => {
+		if(part.includes('=')) indicies.push(i);
+	});
+
+	// extract variables and transform into JSON strings
+	const variables = [];
+	for(let i = 0; i < indicies.length; i++) {
+		const tokens = parts.slice(indicies[i], indicies[i+1]).join('').split("="); //[name, value]
+		variables.push(`"${tokens[0].trim()}" : ${tokens[1].trim().replaceAll('\'','"').replaceAll(/\w+(?=\s*?:)/g,'"$&"')}`); // "name" : "value"
+	}
+
+	return JSON.parse(`{${variables.map((v)=>{return v.replaceAll(/(\n|;)/g,"")}).join()}}`);
+}
+
+function checkV3Script(script : Element) {
+	return script && script.getAttribute('src')?.includes('searchspring.catalog.js')
 }
 
 // async iife

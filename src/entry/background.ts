@@ -60,6 +60,17 @@ function checkForIntercepts(config: StoredData) {
 		});
 	}
 
+	// add intercept allow for v3 catalog
+	intercepts.push({
+		id: intercepts.length + 1,
+		priority: intercepts.length + 1,
+		action: { type: chrome.declarativeNetRequest.RuleActionType.ALLOW },
+		condition: {
+			urlFilter: '*://cdn.searchspring.net/search/v3/*/searchspring.catalog.js?*&snapfu',
+			resourceTypes: [chrome.declarativeNetRequest.ResourceType.SCRIPT]
+		},
+	});
+
 	//  ** modifying the response headers to remove the csp is no longer supported. 
 	// intercepts.push({
 	// 	id: intercepts.length + 2,
