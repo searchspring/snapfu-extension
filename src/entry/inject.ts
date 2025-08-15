@@ -28,6 +28,13 @@ async function injectCode(src: string) {
 
 		const currentContext = script?.innerHTML;
 
+		// check if the script has src and if the siteId is found in the src
+		let siteIdContext = '';
+		const siteIdMatches = script?.getAttribute('src')?.match(/.*snapui.searchspring.io\/([a-zA-Z0-9]{6})\//);
+		if (siteIdMatches && siteIdMatches.length > 1) {
+			siteIdContext = `siteId = "${siteIdMatches[1]}";\n`;
+		}
+
 		// grab attributes from script (if found)
 		const integrationAttributes = Object.values(script?.attributes || {}).reduce((attrs: Record<string, string>, attr) => {
 			const blocklist = ['id', 'src', 'type', 'defer', 'async'];
@@ -38,9 +45,9 @@ async function injectCode(src: string) {
 		}, {});
 
 		// merge script context if configured
-		let scriptContext = context;
+		let scriptContext = siteIdContext ? siteIdContext + context : context;
 		if (mergeContextOption && currentContext) {
-			scriptContext = currentContext + '\n' + context;
+			scriptContext = currentContext + '\n' + scriptContext;
 		}
 
 		if (scriptUrl) {
