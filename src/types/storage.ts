@@ -2,6 +2,7 @@ export type StoredData = {
 	settings: {
 		enabled: boolean;
 		intercepts: string;
+		forceInjection?: boolean;
 	};
 	bundle: {
 		url: string;
