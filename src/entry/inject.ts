@@ -4,6 +4,7 @@ import { LocalData } from '../types/storage';
 async function injectCode(src: string) {
 	const config = await getConfig();
 	if (config.settings.enabled) {
+		const forceInject = config.settings.forceInjection;
 		const scriptUrl = config.bundle.url;
 		const context = config.bundle.context;
 		const mergeContextOption = config.bundle.mergeContext;
@@ -54,6 +55,7 @@ async function injectCode(src: string) {
 			script.src = src;
 			script.id = 'snapfu-script';
 			script.setAttribute('url', scriptUrl);
+			script.setAttribute('force-inject', `${Boolean(forceInject)}`);
 
 			// add element attributes from integration script (if found)
 			Object.keys(integrationAttributes).forEach((key) => {
