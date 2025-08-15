@@ -42,6 +42,18 @@
 				/>
 			</div>
 
+			<div class="option injection">
+				<h3>
+					Script Injection
+				</h3>
+				<div class="description">Enable script injection on any page, regardless of whether integration is present or not.</div>
+
+				<label class="injection">
+					<span>Force Injection: </span>
+					<input v-model="state.config.settings.forceInjection" type="checkbox" />
+				</label>
+			</div>
+
 			<div class="option reset" v-if="detectChanges('', 'default')">
 				<h3>
 					Restore Defaults
@@ -200,7 +212,7 @@ function detectChanges(configPath = '', location = 'saved') {
 
 	const savedValue = configPath
 		? paths.reduce((configuration: any, path: string) => {
-				if (configuration[path as keyof StoredData]) {
+				if (typeof configuration[path as keyof StoredData] !== 'undefined') {
 					return configuration[path as keyof StoredData];
 				}
 		  }, configLocation)
@@ -208,7 +220,7 @@ function detectChanges(configPath = '', location = 'saved') {
 
 	const value = configPath
 		? paths.reduce((configuration: any, path: string) => {
-				if (configuration[path as keyof StoredData]) {
+				if (typeof configuration[path as keyof StoredData] !== 'undefined') {
 					return configuration[path as keyof StoredData];
 				}
 		  }, state.config)
@@ -483,6 +495,10 @@ body {
 		margin-bottom: 5px;
 		margin-top: 5px;
 
+		&:not(:first-child) {
+			margin-top: 20px;
+		}
+
 		h3 {
 			margin: 0 0 5px;
 			display: flex;
@@ -520,7 +536,7 @@ body {
 			display: flex;
 			justify-content: flex-end;
 			align-items: center;
-			margin-top: 30px;
+			margin-top: 10px;
 			margin-bottom: 0;
 			.version {
 				font-size: 12px;
@@ -530,6 +546,14 @@ body {
 				margin-left: 5px;
 				height: 14px;
 				width: 14px;
+			}
+		}
+
+		.option.injection {
+			.injection {
+				display: inline-flex;
+				align-items: center;
+				cursor: pointer;
 			}
 		}
 
