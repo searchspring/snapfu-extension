@@ -54,7 +54,6 @@ async function injectCode(src: string) {
 			script.src = src;
 			script.id = 'snapfu-script';
 			script.setAttribute('url', scriptUrl);
-			script.setAttribute('force-inject', `${Boolean(forceInject)}`);
 
 			// add element attributes from integration script (if found)
 			Object.keys(integrationAttributes).forEach((key) => {
