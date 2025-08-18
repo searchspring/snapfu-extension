@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.7](https://github.com/searchspring/snapfu-extension/compare/v1.4.6...v1.4.7) (2025-08-18)
+
 ### [1.4.6](https://github.com/searchspring/snapfu-extension/compare/v1.4.5...v1.4.6) (2025-08-18)
 
 ### [1.4.5](https://github.com/searchspring/snapfu-extension/compare/v1.4.4...v1.4.5) (2025-08-18)
