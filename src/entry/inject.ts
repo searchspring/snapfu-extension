@@ -4,6 +4,7 @@ import { LocalData } from '../types/storage';
 async function injectCode(src: string) {
 	const config = await getConfig();
 	if (config.settings.enabled) {
+		const forceInject = config.settings.forceInjection;
 		const scriptUrl = config.bundle.url;
 		const context = config.bundle.context;
 		const mergeContextOption = config.bundle.mergeContext;
@@ -27,6 +28,13 @@ async function injectCode(src: string) {
 
 		const currentContext = script?.innerHTML;
 
+		// check if the script has src and if the siteId is found in the src
+		let siteIdContext = '';
+		const siteIdMatches = script?.getAttribute('src')?.match(/.*snapui.searchspring.io\/([a-zA-Z0-9]{6})\//);
+		if (siteIdMatches && siteIdMatches.length > 1) {
+			siteIdContext = `siteId = "${siteIdMatches[1]}";\n`;
+		}
+
 		// grab attributes from script (if found)
 		const integrationAttributes = Object.values(script?.attributes || {}).reduce((attrs: Record<string, string>, attr) => {
 			const blocklist = ['id', 'src', 'type', 'defer', 'async'];
@@ -37,9 +45,9 @@ async function injectCode(src: string) {
 		}, {});
 
 		// merge script context if configured
-		let scriptContext = context;
+		let scriptContext = siteIdContext ? siteIdContext + context : context;
 		if (mergeContextOption && currentContext) {
-			scriptContext = currentContext + '\n' + context;
+			scriptContext = currentContext + '\n' + scriptContext;
 		}
 
 		if (scriptUrl) {
@@ -47,7 +55,8 @@ async function injectCode(src: string) {
 			script.src = src;
 			script.id = 'snapfu-script';
 			script.setAttribute('url', scriptUrl);
-			
+			script.setAttribute('force-inject', `${Boolean(forceInject)}`);
+
 			// add element attributes from integration script (if found)
 			Object.keys(integrationAttributes).forEach((key) => {
 				script.setAttribute(key, integrationAttributes[key]);

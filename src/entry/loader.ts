@@ -1,6 +1,7 @@
 const loadScript = document.getElementById('snapfu-script');
 const context = loadScript?.innerText || '';
 const url = loadScript?.getAttribute('url');
+const forceInject = loadScript?.getAttribute('force-inject') === 'true';
 
 const script = document.createElement('script');
 script.id = 'searchspring-snapfu-script';
@@ -35,4 +36,8 @@ const locateAndInject = () => {
 	}, CHECK_DELAY);
 };
 
-locateAndInject();
+if (forceInject) {
+	window.document.documentElement?.appendChild(script);
+} else {
+	locateAndInject();
+}
