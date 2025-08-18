@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/searchspring/snapfu-extension/compare/v1.3.4...v1.4.0) (2025-08-18)
+
+
+### Features
+
+* **context/siteid:** adding siteId context when injecting script to ensure siteId carries over ([84643d7](https://github.com/searchspring/snapfu-extension/commit/84643d71149dd36af26053d76bd71818dda4e3ef))
+* **settings/forceinject:** adding new setting to allow for "force inject" functionality ([abcc1ea](https://github.com/searchspring/snapfu-extension/commit/abcc1ea998609454e5958e8c37e6f929f6fedc4d))
+
+
+### Bug Fixes
+
+* **context/siteid:** removing line from co-development ([b50aaae](https://github.com/searchspring/snapfu-extension/commit/b50aaae762981b5edfb94fd4cc3eb0654ce87cdd))
+
 ### [1.3.4](https://github.com/searchspring/snapfu-extension/compare/v1.3.3...v1.3.4) (2025-02-04)
 
 ### [1.3.3](https://github.com/searchspring/snapfu-extension/compare/v1.3.2...v1.3.3) (2023-03-01)
