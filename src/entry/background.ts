@@ -61,17 +61,19 @@ function checkForIntercepts(config: StoredData) {
 	}
 
 	// Remove CSP headers to allow localhost script injection
-	intercepts.push({
-		id: intercepts.length + 2,
-		priority: 1,
-		action: { 
-			type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-			responseHeaders: [
-				{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.REMOVE },
-			],
-		},
-		condition: { urlFilter: "*", resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME, chrome.declarativeNetRequest.ResourceType.SUB_FRAME] },
-	});
+	if (config.settings.enabled) {
+		intercepts.push({
+			id: intercepts.length + 2,
+			priority: intercepts.length + 2,
+			action: { 
+				type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+				responseHeaders: [
+					{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.REMOVE },
+				],
+			},
+			condition: { urlFilter: "*", resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME, chrome.declarativeNetRequest.ResourceType.SUB_FRAME] },
+		});
+	}
 
 	chrome.declarativeNetRequest.getDynamicRules((rules) => {
 		const existingRulesToRemove = rules.map((rule) => rule.id);
