@@ -79,7 +79,9 @@
 					<font-awesome-icon class="header-icon collapse-icon" :icon="state.integration.collapsed ? 'angle-down' : 'angle-up'" />
 				</h3>
 
-				<div v-if="state.integration.loading">loading...</div>
+				<div v-if="state.integration.loading" class="loading-container">
+					<Loading />
+				</div>
 
 				<div v-if="!state.integration.loading && state.integration.details.version && !state.integration.collapsed">
 					<div class="description controllers">
@@ -90,6 +92,7 @@
 							:key="key"
 							v-for="(controller, key) in state.integration.details.controllers"
 							@click="() => (controller.collapsed = !controller.collapsed)"
+							class="controller-wrapper"
 						>
 							<Controller :controller="controller" />
 						</div>
@@ -149,6 +152,7 @@
 import { reactive, onMounted, defineProps } from 'vue';
 import { StoredData, LocalData } from '../types/storage';
 import Controller from './controller.vue';
+import Loading from './loading.vue';
 
 import { defaultConfig, getConfig, setConfig, resetConfig, deepCompare, getCurrentTabId } from '../utilities/utilities';
 
