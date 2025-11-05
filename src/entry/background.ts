@@ -10,15 +10,15 @@ chrome.storage.onChanged.addListener(async (_changes, area) => {
 		// clear local storage
 		chrome.storage.local.clear();
 
-		update();
-		reloadCurrentTab();
+		await update();
+		await reloadCurrentTab();
 	}
 });
 
 async function update() {
 	const config = await getConfig();
 
-	checkForIntercepts(config);
+	await checkForIntercepts(config);
 	updateIcon(config);
 }
 
@@ -75,12 +75,19 @@ function checkForIntercepts(config: StoredData) {
 		});
 	}
 
-	chrome.declarativeNetRequest.getDynamicRules((rules) => {
-		const existingRulesToRemove = rules.map((rule) => rule.id);
-		const addRules = config.settings.enabled ? intercepts : [];
-		chrome.declarativeNetRequest.updateDynamicRules({
-			addRules: addRules,
-			removeRuleIds: existingRulesToRemove || [],
+	return new Promise<void>((resolve) => {
+		chrome.declarativeNetRequest.getDynamicRules((rules) => {
+			const existingRulesToRemove = rules.map((rule) => rule.id);
+			const addRules = config.settings.enabled ? intercepts : [];
+			chrome.declarativeNetRequest.updateDynamicRules(
+				{
+					addRules: addRules,
+					removeRuleIds: existingRulesToRemove || [],
+				},
+				() => {
+					resolve();
+				}
+			);
 		});
 	});
 }

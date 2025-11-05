@@ -86,7 +86,7 @@ function addScript(src: string) {
 	chrome.runtime.sendMessage({ text: 'getTabId' }, async (tabId) => {
 		const data = await chrome.storage.local.get();
 		if (tabId && data[tabId]) {
-			delete data[tabId];
+			data[tabId] = {};
 		}
 		await chrome.storage.local.set(data);
 
