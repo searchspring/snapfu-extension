@@ -287,6 +287,10 @@ function toggleOnOff() {
 	state.config = JSON.parse(JSON.stringify(state.savedConfig));
 	state.config.settings.enabled = !currentStatus;
 	saveConfig();
+	
+	// show loading indicator when toggling
+	state.integration.loading = true;
+	state.integration.details = {};
 }
 
 function toggleAppSettings() {
