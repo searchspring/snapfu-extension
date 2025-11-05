@@ -83,24 +83,47 @@ function addScript(src: string) {
 // async iife
 (async function () {
 	// workaround to get the tabId from a content script
-	chrome.runtime.sendMessage({ text: 'getTabId' }, async (tabId) => {
-		const data = await chrome.storage.local.get();
-		if (tabId && data[tabId]) {
-			data[tabId] = {};
-		}
-		await chrome.storage.local.set(data);
+	try {
+		chrome.runtime.sendMessage({ text: 'getTabId' }, async (tabId) => {
+			// check if extension context is still valid
+			if (chrome.runtime.lastError) {
+				return;
+			}
+			
+			try {
+				const data = await chrome.storage.local.get();
+				if (tabId && data[tabId]) {
+					data[tabId] = {};
+				}
+				await chrome.storage.local.set(data);
 
-		document.addEventListener('snapfu-scrape', async (event) => {
-			const data: LocalData = (event as CustomEvent).detail;
-			const storedData = await chrome.storage.local.get();
-			if (tabId) {
-				storedData[tabId] = data;
-				// save it to chrome local storage...
-				chrome.storage.local.set(storedData);
+				document.addEventListener('snapfu-scrape', async (event) => {
+					const data: LocalData = (event as CustomEvent).detail;
+					try {
+						const storedData = await chrome.storage.local.get();
+						if (tabId) {
+							storedData[tabId] = data;
+							// save it to chrome local storage...
+							chrome.storage.local.set(storedData);
+						}
+					} catch (error) {
+						// silently catching invalidated extension context
+					}
+				});
+			} catch (error) {
+				// silently catching invalidated extension context
 			}
 		});
-	});
+	} catch (error) {
+		// silently catching invalidated extension context
+	}
 
-	injectCode(chrome.runtime.getURL('/js/loader.js'));
-	addScript(chrome.runtime.getURL('/js/scraper.js'));
+	try {
+		const loaderUrl = chrome.runtime.getURL('/js/loader.js');
+		const scraperUrl = chrome.runtime.getURL('/js/scraper.js');
+		injectCode(loaderUrl);
+		addScript(scraperUrl);
+	} catch (error) {
+		// silently catching invalidated extension context
+	}
 })();

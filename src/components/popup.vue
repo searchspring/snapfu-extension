@@ -182,27 +182,39 @@ onMounted(async () => {
 	// get currentTabId
 	const tabId = await getCurrentTabId();
 
-	const storedLocalData = await chrome.storage.local.get();
-	if (tabId) {
-		state.integration.details = storedLocalData[tabId];
-		if (state.integration.details?.timestamp) {
-			state.integration.loading = false;
-		}
-	}
-
-	// add onChange storage listener
-	chrome.storage.onChanged.addListener(async (changes, area) => {
-		if (tabId && area === 'local') {
-			const storedLocalData = await chrome.storage.local.get();
+	try {
+		const storedLocalData = await chrome.storage.local.get();
+		if (tabId) {
 			state.integration.details = storedLocalData[tabId];
 			if (state.integration.details?.timestamp) {
 				state.integration.loading = false;
-			} else {
-				state.integration.loading = true;
-				state.integration.details = {};
 			}
 		}
-	});
+	} catch (error) {
+		state.integration.loading = false;
+	}
+
+	// add onChange storage listener
+	try {
+		chrome.storage.onChanged.addListener(async (changes, area) => {
+			if (tabId && area === 'local') {
+				try {
+					const storedLocalData = await chrome.storage.local.get();
+					state.integration.details = storedLocalData[tabId];
+					if (state.integration.details?.timestamp) {
+						state.integration.loading = false;
+					} else {
+						state.integration.loading = true;
+						state.integration.details = {};
+					}
+				} catch (error) {
+					// silently catching invalidated extension context
+				}
+			}
+		});
+	} catch (error) {
+		// silently catching invalidated extension context
+	}
 });
 
 function saveConfig() {

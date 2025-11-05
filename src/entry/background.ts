@@ -7,11 +7,15 @@ update();
 // Watch for changes to the user's options & apply them
 chrome.storage.onChanged.addListener(async (_changes, area) => {
 	if (area === 'sync') {
-		// clear local storage
-		chrome.storage.local.clear();
+		try {
+			// clear local storage
+			chrome.storage.local.clear();
 
-		await update();
-		await reloadCurrentTab();
+			await update();
+			await reloadCurrentTab();
+		} catch (error) {
+			// silently catching invalidated extension context
+		}
 	}
 });
 
@@ -24,20 +28,24 @@ async function update() {
 
 function updateIcon(config: StoredData) {
 	// set the extension icon if enabled
-	if (config.settings.enabled) {
-		chrome.action.setIcon({
-			path: {
-				'48': '../assets/icons/snapfu48_on.png',
-				'128': '../assets/icons/snapfu128_on.png',
-			},
-		});
-	} else {
-		chrome.action.setIcon({
-			path: {
-				'48': '../assets/icons/snapfu48.png',
-				'128': '../assets/icons/snapfu128.png',
-			},
-		});
+	try {
+		if (config.settings.enabled) {
+			chrome.action.setIcon({
+				path: {
+					'48': '../assets/icons/snapfu48_on.png',
+					'128': '../assets/icons/snapfu128_on.png',
+				},
+			});
+		} else {
+			chrome.action.setIcon({
+				path: {
+					'48': '../assets/icons/snapfu48.png',
+					'128': '../assets/icons/snapfu128.png',
+				},
+			});
+		}
+	} catch (error) {
+		// silently catching invalidated extension context
 	}
 }
 
@@ -76,26 +84,35 @@ function checkForIntercepts(config: StoredData) {
 	}
 
 	return new Promise<void>((resolve) => {
-		chrome.declarativeNetRequest.getDynamicRules((rules) => {
-			const existingRulesToRemove = rules.map((rule) => rule.id);
-			const addRules = config.settings.enabled ? intercepts : [];
-			chrome.declarativeNetRequest.updateDynamicRules(
-				{
-					addRules: addRules,
-					removeRuleIds: existingRulesToRemove || [],
-				},
-				() => {
-					resolve();
-				}
-			);
-		});
+		try {
+			chrome.declarativeNetRequest.getDynamicRules((rules) => {
+				const existingRulesToRemove = rules.map((rule) => rule.id);
+				const addRules = config.settings.enabled ? intercepts : [];
+				chrome.declarativeNetRequest.updateDynamicRules(
+					{
+						addRules: addRules,
+						removeRuleIds: existingRulesToRemove || [],
+					},
+					() => {
+						resolve();
+					}
+				);
+			});
+		} catch (error) {
+			// silently catching invalidated extension context
+			resolve();
+		}
 	});
 }
 
 async function reloadCurrentTab() {
-	const id = await getCurrentTabId();
-	if (id) {
-		return chrome.tabs.reload(Number(id));
+	try {
+		const id = await getCurrentTabId();
+		if (id) {
+			return chrome.tabs.reload(Number(id));
+		}
+	} catch (error) {
+		// silently catching invalidated extension context
 	}
 }
 
