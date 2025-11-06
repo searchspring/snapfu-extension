@@ -7,37 +7,45 @@ update();
 // Watch for changes to the user's options & apply them
 chrome.storage.onChanged.addListener(async (_changes, area) => {
 	if (area === 'sync') {
-		// clear local storage
-		chrome.storage.local.clear();
+		try {
+			// clear local storage
+			chrome.storage.local.clear();
 
-		update();
-		reloadCurrentTab();
+			await update();
+			await reloadCurrentTab();
+		} catch (error) {
+			// silently catching invalidated extension context
+		}
 	}
 });
 
 async function update() {
 	const config = await getConfig();
 
-	checkForIntercepts(config);
+	await checkForIntercepts(config);
 	updateIcon(config);
 }
 
 function updateIcon(config: StoredData) {
 	// set the extension icon if enabled
-	if (config.settings.enabled) {
-		chrome.action.setIcon({
-			path: {
-				'48': '../assets/icons/snapfu48_on.png',
-				'128': '../assets/icons/snapfu128_on.png',
-			},
-		});
-	} else {
-		chrome.action.setIcon({
-			path: {
-				'48': '../assets/icons/snapfu48.png',
-				'128': '../assets/icons/snapfu128.png',
-			},
-		});
+	try {
+		if (config.settings.enabled) {
+			chrome.action.setIcon({
+				path: {
+					'48': '../assets/icons/snapfu48_on.png',
+					'128': '../assets/icons/snapfu128_on.png',
+				},
+			});
+		} else {
+			chrome.action.setIcon({
+				path: {
+					'48': '../assets/icons/snapfu48.png',
+					'128': '../assets/icons/snapfu128.png',
+				},
+			});
+		}
+	} catch (error) {
+		// silently catching invalidated extension context
 	}
 }
 
@@ -60,33 +68,51 @@ function checkForIntercepts(config: StoredData) {
 		});
 	}
 
-	//  ** modifying the response headers to remove the csp is no longer supported. 
-	// intercepts.push({
-	// 	id: intercepts.length + 2,
-	// 	priority: 1,
-	// 	action: { 
-	// 		type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-	// 		responseHeaders: [
-	// 			{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.SET, value: "" },
-	// 		],
-	// 	},
-	// 	condition: { urlFilter: "*", resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME] },
-	// })
-
-	chrome.declarativeNetRequest.getDynamicRules((rules) => {
-		const existingRulesToRemove = rules.map((rule) => rule.id);
-		const addRules = config.settings.enabled ? intercepts : [];
-		chrome.declarativeNetRequest.updateDynamicRules({
-			addRules: addRules,
-			removeRuleIds: existingRulesToRemove || [],
+	// Remove CSP headers to allow localhost script injection
+	if (config.settings.enabled) {
+		intercepts.push({
+			id: intercepts.length + 2,
+			priority: intercepts.length + 2,
+			action: { 
+				type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+				responseHeaders: [
+					{ header: "content-security-policy", operation: chrome.declarativeNetRequest.HeaderOperation.REMOVE },
+				],
+			},
+			condition: { urlFilter: "*", resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME, chrome.declarativeNetRequest.ResourceType.SUB_FRAME] },
 		});
+	}
+
+	return new Promise<void>((resolve) => {
+		try {
+			chrome.declarativeNetRequest.getDynamicRules((rules) => {
+				const existingRulesToRemove = rules.map((rule) => rule.id);
+				const addRules = config.settings.enabled ? intercepts : [];
+				chrome.declarativeNetRequest.updateDynamicRules(
+					{
+						addRules: addRules,
+						removeRuleIds: existingRulesToRemove || [],
+					},
+					() => {
+						resolve();
+					}
+				);
+			});
+		} catch (error) {
+			// silently catching invalidated extension context
+			resolve();
+		}
 	});
 }
 
 async function reloadCurrentTab() {
-	const id = await getCurrentTabId();
-	if (id) {
-		return chrome.tabs.reload(Number(id));
+	try {
+		const id = await getCurrentTabId();
+		if (id) {
+			return chrome.tabs.reload(Number(id));
+		}
+	} catch (error) {
+		// silently catching invalidated extension context
 	}
 }
 

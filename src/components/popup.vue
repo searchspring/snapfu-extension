@@ -79,7 +79,9 @@
 					<font-awesome-icon class="header-icon collapse-icon" :icon="state.integration.collapsed ? 'angle-down' : 'angle-up'" />
 				</h3>
 
-				<div v-if="state.integration.loading">loading...</div>
+				<div v-if="state.integration.loading" class="loading-container">
+					<Loading />
+				</div>
 
 				<div v-if="!state.integration.loading && state.integration.details.version && !state.integration.collapsed">
 					<div class="description controllers">
@@ -90,6 +92,7 @@
 							:key="key"
 							v-for="(controller, key) in state.integration.details.controllers"
 							@click="() => (controller.collapsed = !controller.collapsed)"
+							class="controller-wrapper"
 						>
 							<Controller :controller="controller" />
 						</div>
@@ -149,6 +152,7 @@
 import { reactive, onMounted, defineProps } from 'vue';
 import { StoredData, LocalData } from '../types/storage';
 import Controller from './controller.vue';
+import Loading from './loading.vue';
 
 import { defaultConfig, getConfig, setConfig, resetConfig, deepCompare, getCurrentTabId } from '../utilities/utilities';
 
@@ -178,27 +182,39 @@ onMounted(async () => {
 	// get currentTabId
 	const tabId = await getCurrentTabId();
 
-	const storedLocalData = await chrome.storage.local.get();
-	if (tabId) {
-		state.integration.details = storedLocalData[tabId];
-		if (state.integration.details?.timestamp) {
-			state.integration.loading = false;
-		}
-	}
-
-	// add onChange storage listener
-	chrome.storage.onChanged.addListener(async (changes, area) => {
-		if (tabId && area === 'local') {
-			const storedLocalData = await chrome.storage.local.get();
+	try {
+		const storedLocalData = await chrome.storage.local.get();
+		if (tabId) {
 			state.integration.details = storedLocalData[tabId];
 			if (state.integration.details?.timestamp) {
 				state.integration.loading = false;
-			} else {
-				state.integration.loading = true;
-				state.integration.details = {};
 			}
 		}
-	});
+	} catch (error) {
+		state.integration.loading = false;
+	}
+
+	// add onChange storage listener
+	try {
+		chrome.storage.onChanged.addListener(async (changes, area) => {
+			if (tabId && area === 'local') {
+				try {
+					const storedLocalData = await chrome.storage.local.get();
+					state.integration.details = storedLocalData[tabId];
+					if (state.integration.details?.timestamp) {
+						state.integration.loading = false;
+					} else {
+						state.integration.loading = true;
+						state.integration.details = {};
+					}
+				} catch (error) {
+					// silently catching invalidated extension context
+				}
+			}
+		});
+	} catch (error) {
+		// silently catching invalidated extension context
+	}
 });
 
 function saveConfig() {
@@ -287,6 +303,10 @@ function toggleOnOff() {
 	state.config = JSON.parse(JSON.stringify(state.savedConfig));
 	state.config.settings.enabled = !currentStatus;
 	saveConfig();
+	
+	// show loading indicator when toggling
+	state.integration.loading = true;
+	state.integration.details = {};
 }
 
 function toggleAppSettings() {

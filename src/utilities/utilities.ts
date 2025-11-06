@@ -18,7 +18,11 @@ export const defaultConfig: StoredData = {
 };
 
 export const setConfig = (data: StoredData): void => {
-	chrome.storage.sync.set(data);
+	try {
+		chrome.storage.sync.set(data);
+	} catch (error) {
+		// silently catching invalidated extension context
+	}
 };
 
 export const resetConfig = (): void => {
@@ -26,8 +30,12 @@ export const resetConfig = (): void => {
 };
 
 export const getConfig = async (): Promise<StoredData> => {
-	const storedData = (await chrome.storage.sync.get()) as StoredData;
-	return typeof storedData?.bundle?.url != 'undefined' ? storedData : defaultConfig;
+	try {
+		const storedData = (await chrome.storage.sync.get()) as StoredData;
+		return typeof storedData?.bundle?.url != 'undefined' ? storedData : defaultConfig;
+	} catch (error) {
+		return defaultConfig;
+	}
 };
 
 // deep compare function
@@ -58,7 +66,11 @@ export const deepCompare = (x: any, y: any): boolean => {
 };
 
 export const getCurrentTabId = async (): Promise<string | undefined> => {
-	const queryOptions = { active: true, currentWindow: true };
-	const [tab] = await chrome.tabs.query(queryOptions);
-	return `${tab.id}` || undefined;
+	try {
+		const queryOptions = { active: true, currentWindow: true };
+		const [tab] = await chrome.tabs.query(queryOptions);
+		return `${tab.id}` || undefined;
+	} catch (error) {
+		return undefined;
+	}
 };

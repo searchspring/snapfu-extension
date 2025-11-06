@@ -47,6 +47,10 @@ const controllerIcon = computed(() => {
 	border-bottom: 1px solid #ccc;
 	padding: 10px;
 
+	.controller-wrapper:last-child & {
+		border-bottom: none;
+	}
+
 	.controller-header {
 		cursor: pointer;
 		display: flex;
