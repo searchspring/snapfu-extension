@@ -1,9 +1,10 @@
 {
 	"manifest_version": 3,
-	"name": "snapfu",
-	"description": "searchspring snap extension",
-	"version": "1.4.10",
-	"permissions": ["storage", "webRequest", "declarativeNetRequest", "activeTab", "tabs"],
+	"name": "Snapfu Extension",
+	"description": "Extension used for injecting Snap bundles onto pages for testing purposes.",
+	"version": "1.5.0",
+	"permissions": ["storage", "webRequest", "declarativeNetRequestWithHostAccess", "activeTab", "tabs"],
+	"host_permissions": ["<all_urls>"],
 	"background": {
 		"service_worker": "/js/background.js"
 	},

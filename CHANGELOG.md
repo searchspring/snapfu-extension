@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/searchspring/snapfu-extension/compare/v1.4.10...v1.5.0) (2025-11-06)
+
+
+### Features
+
+* **csp:** adding ability to bypass CSP when using extension ([1216837](https://github.com/searchspring/snapfu-extension/commit/1216837f1d8c87270ea48ce45d420d19da040092))
+
+
+### Bug Fixes
+
+* **extension:** adding some error supression by catching errors caused by context invalidation ([ddac4c8](https://github.com/searchspring/snapfu-extension/commit/ddac4c8d2caa4b09a6e1fc36948a4ec5ed35f71b))
+* **extension:** changing logic so that on toggle the loading state changes and clears details ([a6cc93b](https://github.com/searchspring/snapfu-extension/commit/a6cc93b0178bf38a9504c9bd7162566b05095993))
+* **extension:** fixing initial loading issue that prevented intercept from being added ([6ad9812](https://github.com/searchspring/snapfu-extension/commit/6ad98122506ffc80c1df998283b2b3b62548ce6a))
+* **extension:** improving loading by adding animation ([7e75841](https://github.com/searchspring/snapfu-extension/commit/7e75841a4c58ca84bf52ff3d7f913536f0cb5112))
+
+
+### Reverts
+
+* Revert "build(build): updating the lock file" ([b1fb7f1](https://github.com/searchspring/snapfu-extension/commit/b1fb7f175db7197ba1a81aa19ca31775aa400993))
+
 ### [1.4.10](https://github.com/searchspring/snapfu-extension/compare/v1.4.9...v1.4.10) (2025-08-18)
 
 ### [1.4.9](https://github.com/searchspring/snapfu-extension/compare/v1.4.8...v1.4.9) (2025-08-18)
