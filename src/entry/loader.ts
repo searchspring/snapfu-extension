@@ -12,7 +12,7 @@ const CHECK_DELAY = 4000;
 const locateAndInject = () => {
 	
 	setInterval(() => {
-		// try to find the integration script block and inject in same parent if found
+		// Try to find the integration script block and inject in same parent if found
 		let browserGlobalSpace: Window | null | undefined = window;
 		const snapScriptSelector = 'script[id^=searchspring], script[src*="snapui.searchspring.io"]';
 		const snapScript = browserGlobalSpace.document.querySelector(snapScriptSelector);

@@ -1,41 +1,48 @@
-import { getConfig } from '../utilities/utilities';
+import { getHostnameFromUrl, getHostnameConfig } from '../utilities/utilities';
 import { LocalData } from '../types/storage';
 
-async function injectCode(src: string) {
-	const config = await getConfig();
-	if (config.settings.enabled) {
-		const forceInject = config.settings.forceInjection;
-		const scriptUrl = config.bundle.url;
-		const context = config.bundle.context;
-		const mergeContextOption = config.bundle.mergeContext;
+async function injectCode(src: string, enabled: boolean) {
+	const hostname = getHostnameFromUrl(window.location.href);
+	
+	if (!hostname) {
+		return;
+	}
+
+	const hostnameConfig = await getHostnameConfig(hostname);
+	
+	if (enabled) {
+		const forceInject = hostnameConfig.forceInjection;
+		const scriptUrl = hostnameConfig.bundle.url;
+		const context = hostnameConfig.bundle.context;
+		const mergeContextOption = hostnameConfig.bundle.mergeContext;
 
 		const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[src*="snapui.searchspring.io"]'));
 
-		// remove contexts if not merging
+		// Remove contexts if not merging
 		if (!mergeContextOption) {
 			scripts.forEach((script) => {
 				script.innerHTML = '';
 			});
 		}
 
-		// grab context from scripts (get the one with most content)
+		// Grab context from scripts (get the one with most content)
 		const script = scripts
 			.sort((a, b) => {
-				// order them by innerHTML (so that popped script has innerHTML)
+				// Order them by innerHTML (so that popped script has innerHTML)
 				return a.innerHTML.length - b.innerHTML.length;
 			})
 			.pop() as HTMLScriptElement;
 
 		const currentContext = script?.innerHTML;
 
-		// check if the script has src and if the siteId is found in the src
+		// Check if the script has src and if the siteId is found in the src
 		let siteIdContext = '';
 		const siteIdMatches = script?.getAttribute('src')?.match(/.*snapui.searchspring.io\/([a-zA-Z0-9]{6})\//);
 		if (siteIdMatches && siteIdMatches.length > 1) {
 			siteIdContext = `siteId = "${siteIdMatches[1]}";\n`;
 		}
 
-		// grab attributes from script (if found)
+		// Grab attributes from script (if found)
 		const integrationAttributes = Object.values(script?.attributes || {}).reduce((attrs: Record<string, string>, attr) => {
 			const blocklist = ['id', 'src', 'type', 'defer', 'async'];
 			const name = attr.nodeName;
@@ -44,7 +51,7 @@ async function injectCode(src: string) {
 			return attrs;
 		}, {});
 
-		// merge script context if configured
+		// Merge script context if configured
 		let scriptContext = siteIdContext ? siteIdContext + context : context;
 		if (mergeContextOption && currentContext) {
 			scriptContext = currentContext + '\n' + scriptContext;
@@ -57,7 +64,7 @@ async function injectCode(src: string) {
 			script.setAttribute('url', scriptUrl);
 			script.setAttribute('force-inject', `${Boolean(forceInject)}`);
 
-			// add element attributes from integration script (if found)
+			// Add element attributes from integration script (if found)
 			Object.keys(integrationAttributes).forEach((key) => {
 				script.setAttribute(key, integrationAttributes[key]);
 			});
@@ -80,50 +87,66 @@ function addScript(src: string) {
 	}
 }
 
-// async iife
+// Async iife
 (async function () {
-	// workaround to get the tabId from a content script
+	// Workaround to get the tabId from a content script
 	try {
 		chrome.runtime.sendMessage({ text: 'getTabId' }, async (tabId) => {
-			// check if extension context is still valid
+			// Check if extension context is still valid
 			if (chrome.runtime.lastError) {
 				return;
 			}
 			
 			try {
-				const data = await chrome.storage.local.get();
-				if (tabId && data[tabId]) {
-					data[tabId] = {};
-				}
-				await chrome.storage.local.set(data);
+				const key = String(tabId);
+				const existing = await chrome.storage.local.get(key);
+				
+				// Always clear scrape data on page load, preserving only the enabled state
+				const enabled = existing[key]?.enabled ?? false;
+				await chrome.storage.local.set({
+					[key]: { enabled }
+				});
 
 				document.addEventListener('snapfu-scrape', async (event) => {
 					const data: LocalData = (event as CustomEvent).detail;
 					try {
-						const storedData = await chrome.storage.local.get();
-						if (tabId) {
-							storedData[tabId] = data;
-							// save it to chrome local storage...
-							chrome.storage.local.set(storedData);
-						}
+						const key = String(tabId);
+						const existing = await chrome.storage.local.get(key);
+						
+						// Get existing enabled state or default to false
+						const enabled = existing[key]?.enabled ?? false;
+						
+						// Save scrape data with enabled state
+						await chrome.storage.local.set({
+							[key]: { ...data, enabled }
+						});
 					} catch (error) {
-						// silently catching invalidated extension context
+						// Silently catching invalidated extension context
 					}
 				});
 			} catch (error) {
-				// silently catching invalidated extension context
+				// Silently catching invalidated extension context
 			}
 		});
 	} catch (error) {
-		// silently catching invalidated extension context
+		// Silently catching invalidated extension context
 	}
 
 	try {
 		const loaderUrl = chrome.runtime.getURL('/js/loader.js');
 		const scraperUrl = chrome.runtime.getURL('/js/scraper.js');
-		injectCode(loaderUrl);
+		
+		// Get the enabled state for this tab
+		chrome.runtime.sendMessage({ text: 'getTabEnabled' }, (response) => {
+			if (chrome.runtime.lastError || !response) {
+				return;
+			}
+			const enabled = response.enabled || false;
+			injectCode(loaderUrl, enabled);
+		});
+		
 		addScript(scraperUrl);
 	} catch (error) {
-		// silently catching invalidated extension context
+		// Silently catching invalidated extension context
 	}
 })();

@@ -14,7 +14,7 @@ let timeElapsed = 0;
 setInterval(() => {
 	timeElapsed += SCRAPE_INTERVAL;
 	if (timeElapsed > 5000 && !data.version) {
-		// giving up scraping and nothing found
+		// Giving up scraping and nothing found
 		const event = new CustomEvent('snapfu-scrape', { detail: { timestamp: Date.now() } });
 		document.dispatchEvent(event);
 	}
@@ -22,7 +22,7 @@ setInterval(() => {
 	let browserGlobalSpace: Window | null | undefined = window;
 	if (!browserGlobalSpace?.searchspring) {
 		try {
-		// if we don't find searchspring global on window try looking in iframes
+		// If we don't find searchspring global on window try looking in iframes
 		const iframes = document.querySelectorAll('iframe');
 		
 		browserGlobalSpace = Array.from(iframes)
@@ -31,7 +31,7 @@ setInterval(() => {
 			.filter((iframe) => iframe.contentWindow?.searchspring)
 			?.pop()?.contentWindow;
 		}catch(err){
-			//do nothing
+			// Do nothing
 		}
 	}
 
@@ -75,7 +75,7 @@ setInterval(() => {
 
 		const resultsChanged = !controllersAreTheSame || !versionsAreTheSame;
 
-		// only send event when details have changed
+		// Only send event when details have changed
 		if (newData.version != data.version || newData.controllers?.length != data.controllers?.length || resultsChanged) {
 			data = newData;
 			const payload = { timestamp: Date.now(), ...data };

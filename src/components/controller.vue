@@ -44,11 +44,14 @@ const controllerIcon = computed(() => {
 
 <style lang="scss">
 .controller {
-	border-bottom: 1px solid #ccc;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 	padding: 10px;
+	background: rgba(0, 0, 0, 0.03);
+	border-radius: 4px;
+	margin-bottom: 10px;
 
 	.controller-wrapper:last-child & {
-		border-bottom: none;
+		margin-bottom: 0;
 	}
 
 	.controller-header {
@@ -67,12 +70,28 @@ const controllerIcon = computed(() => {
 
 	.controller-details {
 		display: block;
-		padding-left: 22px;
 		padding-top: 10px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 
-		& b {
-			min-width: 45px;
-			display: inline-block;
+		> div {
+			display: flex;
+			align-items: center;
+			background: rgba(0, 0, 0, 0.05);
+			padding: 6px 10px;
+			border-radius: 4px;
+			font-size: 12px;
+
+			b {
+				min-width: 60px;
+				display: inline-block;
+				color: rgba(0, 0, 0, 0.6);
+				font-weight: 600;
+				text-transform: uppercase;
+				font-size: 10px;
+				letter-spacing: 0.5px;
+			}
 		}
 	}
 }

@@ -1,13 +1,10 @@
-import { StoredData } from '../types/storage';
+import { StoredData, HostnameConfig } from '../types/storage';
 
-export const defaultConfig: StoredData = {
-	settings: {
-		enabled: false,
-		intercepts: `*://snapui.searchspring.io/*/bundle.js*
+export const defaultHostnameConfig: HostnameConfig = {
+	intercepts: `*://snapui.searchspring.io/*/bundle.js*
 *://cdn.searchspring.net/search/v3/js/searchspring.catalog.js*
 *://cdn.searchspring.net/search/v3/lts/searchspring.catalog.js*`,
-		forceInjection: false,
-	},
+	forceInjection: false,
 	bundle: {
 		url: 'https://localhost:3333/bundle.js',
 		context: `shopper = {
@@ -17,49 +14,140 @@ export const defaultConfig: StoredData = {
 	},
 };
 
-export const setConfig = (data: StoredData): void => {
-	try {
-		chrome.storage.sync.set(data);
-	} catch (error) {
-		// silently catching invalidated extension context
-	}
+export const defaultConfig: StoredData = {
+	hostnameConfigs: {},
 };
 
-export const resetConfig = (): void => {
-	setConfig(defaultConfig);
+export const setConfig = async (data: StoredData): Promise<void> => {
+	try {
+		await chrome.storage.sync.set(data);
+	} catch (error) {
+		// Silently catching invalidated extension context
+	}
 };
 
 export const getConfig = async (): Promise<StoredData> => {
 	try {
-		const storedData = (await chrome.storage.sync.get()) as StoredData;
-		return typeof storedData?.bundle?.url != 'undefined' ? storedData : defaultConfig;
+		const storedData = await chrome.storage.sync.get();
+		if (Object.keys(storedData).length === 0) {
+			return defaultConfig;
+		}
+		return storedData as StoredData;
 	} catch (error) {
 		return defaultConfig;
 	}
 };
 
-// deep compare function
-export const deepCompare = (x: any, y: any): boolean => {
+// Get hostname from URL
+export const getHostnameFromUrl = (url: string): string | null => {
+	try {
+		const urlObj = new URL(url);
+		return urlObj.hostname;
+	} catch (error) {
+		return null;
+	}
+};
+
+// Get current tab's hostname
+export const getCurrentHostname = async (): Promise<string | null> => {
+	try {
+		const queryOptions = { active: true, currentWindow: true };
+		const [tab] = await chrome.tabs.query(queryOptions);
+		if (tab.url) {
+			return getHostnameFromUrl(tab.url);
+		}
+		return null;
+	} catch (error) {
+		return null;
+	}
+};
+
+// Get hostname config
+export const getHostnameConfig = async (hostname: string): Promise<HostnameConfig> => {
+	const config = await getConfig();
+	return config.hostnameConfigs[hostname] || JSON.parse(JSON.stringify(defaultHostnameConfig));
+};
+
+// Set hostname config
+export const setHostnameConfig = async (hostname: string, hostnameConfig: HostnameConfig): Promise<void> => {
+	const config = await getConfig();
+	config.hostnameConfigs[hostname] = hostnameConfig;
+	await setConfig(config);
+};
+
+// Get hostname config for a specific tab
+export const getTabHostnameConfig = async (tabId: number): Promise<{ hostname: string | null; config: HostnameConfig }> => {
+	try {
+		const tab = await chrome.tabs.get(tabId);
+		if (tab.url) {
+			const hostname = getHostnameFromUrl(tab.url);
+			if (hostname) {
+				const config = await getHostnameConfig(hostname);
+				return { hostname, config };
+			}
+		}
+	} catch (error) {
+		// Silently catching errors
+	}
+	return { hostname: null, config: JSON.parse(JSON.stringify(defaultHostnameConfig)) };
+};
+
+// Get per-tab enabled state from local storage
+export const getTabEnabled = async (tabId: number): Promise<boolean> => {
+	try {
+		const data = await chrome.storage.local.get();
+		const tabData = data[tabId];
+		return tabData?.enabled ?? false; // default to false
+	} catch (error) {
+		return false;
+	}
+};
+
+// Set per-tab enabled state in local storage
+export const setTabEnabled = async (tabId: number, enabled: boolean): Promise<void> => {
+	try {
+		const key = String(tabId);
+		const existing = await chrome.storage.local.get(key);
+		await chrome.storage.local.set({
+			[key]: {
+				...existing[key],
+				enabled,
+			}
+		});
+	} catch (error) {
+		// Silently catching errors
+	}
+};
+
+// Deep compare function
+export const deepCompare = <T>(x: T, y: T): boolean => {
 	if (x === y) return true;
+
+	if (x === null || y === null) return false;
+	if (x === undefined || y === undefined) return false;
 
 	if (typeof x !== typeof y) return false;
 
-	if (typeof x === 'object') {
+	if (typeof x === 'object' && typeof y === 'object') {
 		if (Array.isArray(x) && Array.isArray(y)) {
 			if (x.length !== y.length) return false;
 			for (let i = 0; i < x.length; i++) {
 				if (!deepCompare(x[i], y[i])) return false;
 			}
 			return true;
-		} else {
-			const xKeys = Object.keys(x);
-			const yKeys = Object.keys(y);
-			if (xKeys.length !== yKeys.length) return false;
-			for (const key of xKeys) {
-				if (!yKeys.includes(key) || !deepCompare(x[key], y[key])) return false;
-			}
-			return true;
 		}
+		
+		if (Array.isArray(x) || Array.isArray(y)) return false;
+		
+		const xKeys = Object.keys(x);
+		const yKeys = Object.keys(y);
+		if (xKeys.length !== yKeys.length) return false;
+		
+		for (const key of xKeys) {
+			if (!yKeys.includes(key)) return false;
+			if (!deepCompare((x as any)[key], (y as any)[key])) return false;
+		}
+		return true;
 	}
 
 	return false;
