@@ -26,7 +26,7 @@ chrome.storage.onChanged.addListener(async (_changes, area) => {
 		}
 	}
 	
-	// Watch for enabled state changes in local storage to update icon AND intercepts
+	// Watch for enabled state changes in local storage to update intercepts
 	if (area === 'local') {
 		try {
 			let shouldUpdateIntercepts = false;
@@ -35,14 +35,15 @@ chrome.storage.onChanged.addListener(async (_changes, area) => {
 			for (const key in _changes) {
 				const tabId = Number(key);
 				if (!isNaN(tabId) && _changes[key].newValue?.enabled !== undefined) {
-					await updateIconForTab(tabId);
 					shouldUpdateIntercepts = true;
+					// Don't update icon immediately - let the tab update event handle it
+					// This prevents flashing during page reload
 				}
 			}
 			
 			// Update intercepts if any tab's enabled state changed
 			if (shouldUpdateIntercepts) {
-				await update();
+				await checkForIntercepts(await getConfig());
 			}
 		} catch (error) {
 			// Silently catching invalidated extension context
@@ -102,10 +103,21 @@ async function updateIconForTab(tabId: number) {
 
 		const enabled = await getTabEnabled(tabId);
 
-		const iconPath = enabled ? '/assets/icons/snapfu128_on.png' : '/assets/icons/snapfu128.png';
-		await chrome.action.setIcon({ path: iconPath, tabId });
+		// Select icons based on enabled state
+		const iconPaths = enabled 
+			? {
+				'48': '/assets/icons/athos-icon-on-48.png',
+				'128': '/assets/icons/athos-icon-on-128.png'
+			}
+			: {
+				'48': '/assets/icons/athos-icon-48.png',
+				'128': '/assets/icons/athos-icon-128.png'
+			};
+
+		await chrome.action.setIcon({ path: iconPaths, tabId });
 	} catch (error) {
-		// Silently catching invalidated extension context
+		// Tab may have been closed, or extension context invalidated - silently ignore
+		return;
 	}
 }
 

@@ -1,53 +1,102 @@
-# Searchspring Snapfu Extension
-This extension allows us to inject our script on to a clients site if they don't have our script. Or if they do we can remove their current script and add a script in any configuration we want. You can also redirect the script on a live client site to run off your local bundle.js.
+# Athos Commerce Snapfu Extension
 
-## Installing in Chrome
+A Chrome extension for Searchspring developers to inject, test, and debug Snap bundles on client sites. This tool allows you to override existing scripts, inject local development bundles, and control script loading behavior.
 
-Clone this repository
+## Features
 
-```
+- 🚀 **Script Injection**: Inject custom Snap bundles onto any site
+- 🔄 **Live Bundle Switching**: Toggle between local development and CDN-hosted bundles
+- 🛡️ **Network Intercepts**: Block existing scripts to prevent conflicts
+- 📊 **Integration Details**: View real-time information about loaded Snap controllers
+- ⚙️ **Context Variables**: Inject custom context variables with bundle scripts
+- 🎯 **Per-Site Configuration**: Settings are saved per hostname for easy context switching
+- 🎨 **Modern UI**: Clean, dashboard-style interface with live loading states
+
+## Installation
+
+### Clone the Repository
+
+```bash
 git clone git@github.com:searchspring/snapfu-extension.git
+cd snapfu-extension
+npm install
+npm run build
 ```
 
-Navigate to: chrome://extensions/ in your chrome browser.
+### Load in Chrome
 
-Toggle **ON** 'Developer Mode'.
+1. Navigate to `chrome://extensions/` in your Chrome browser
+2. Toggle **ON** 'Developer Mode' (top-right corner)
+3. Click 'Load unpacked'
+4. Navigate to the cloned repository and select the `release` directory
 
-Press the button that says 'Load unpacked'.
+The Athos Commerce Snapfu Extension should now be available in Chrome.
 
-That will open up your local file directory; navigate to where the extension is located and select the `release` directory.
+## Using the Extension
 
-The Searchspring Snap Extension should now be available within Chrome.
+### Getting Started
 
-## How to use the extension
-
-When you click on the Searchspring Extension this should pop up:
+Click the Athos extension icon in your Chrome toolbar to open the popup interface.
 
 ![Chrome Extension](/img/readmePic.png?raw=true)
 
-You can enable the extension by clicking the toggle in the header. 
+### Enabling the Extension
 
-## Injecting bundle script
+Click the toggle switch in the header to enable/disable the extension for the current site. When enabled, the extension will inject your configured bundle and block intercepted URLs. 
 
-A local URL is set by default in the `Bundle URL` and will inject a script with the src of `https://localhost:3333/bundle.js` onto the page.
-### Local script
-To inject a script that is running locally, modify the `Bundle URL` - clicking the `local` button will autofill with the default development bundle that Snap implementations use. 
+## Configuration
 
+### Bundle URL
 
-### CDN hosted script
+The **Bundle URL** field controls which Snap bundle script to inject onto the page.
 
-To inject a script hosted by Searchspring's CDN, click the **CDN** button; by default, the button will set the `Bundle URL` to `https://snapui.searchspring.io/siteid/branch/bundle.js`. Modify the default URL by entering a valid siteId and branch path.
+#### Quick Actions
 
-This requires that the Snap Github Action `@searchspring/snap-action` has successfully completed on the desired branch. 
+- **local** button: Sets URL to `https://localhost:3333/bundle.js` (default local development URL)
+- **cdn** button: Sets URL to `https://snapui.searchspring.io/siteid/branch/bundle.js` (CDN template)
 
+For CDN URLs, replace `siteid` and `branch` with your actual site ID and branch name. This requires that the `@searchspring/snap-action` GitHub Action has successfully deployed to the specified branch.
 
-## Intercepts
+#### Custom URLs
 
-While the extension is enabled, any network request attempting to reach a url found in the intercepts list will be blocked. This is useful for working on a site that is already live with v3 or snap. You can however add any url to this list that you may want to block. 
+You can manually enter any URL in the Bundle URL field. The reset icon (↺) will restore the default value.
 
-To view or edit the list of intercept urls. First go to the **Settings** page by clicking the settings ***Cog*** in the header. 
+### Script Context
 
-By default, the extension will have the 3 standard urls blocked that you would normally want to block when working with Snap. Each url is seperated by a new line in the text box. 
+Add custom context variables to be injected with the bundle script. These variables will be available to your Snap implementation.
+
+- Enter valid JavaScript object notation in the text area
+- Enable **Merge context** to combine your context with any existing context on the page
+- The reset icon (↺) will clear your custom context
+
+### Integration Details
+
+When a Snap bundle is loaded, the extension displays:
+
+- **Site ID**: The Searchspring site identifier
+- **Version**: The loaded Snap bundle version
+- **Controllers**: Count and details of active Snap controllers
+
+Click the header to expand and view detailed controller information including:
+- Controller type (search, autocomplete, recommendation, finder)
+- Load status
+- Result count
+- Plugin count
+- Configuration globals and settings
+
+## Network Intercepts
+
+The extension can block network requests to prevent conflicts with existing scripts.
+
+### Viewing/Editing Intercepts
+
+1. Click the **Settings** gear icon in the header
+2. Find the **Intercepts** section
+3. Add one URL pattern per line
+
+### Default Intercepts
+
+By default, the extension blocks these common Snap and legacy script URLs:
 
 ```
 *://snapui.searchspring.io/*/bundle.js*
@@ -55,23 +104,92 @@ By default, the extension will have the 3 standard urls blocked that you would n
 *://cdn.searchspring.net/search/v3/lts/searchspring.catalog.js*
 ```
 
-## Editing the extension
+URL patterns support wildcards (`*`) for flexible matching.
 
-First you must install 
-```
+### Injection Target
+
+Advanced users can customize where the script is injected in the DOM using the **Injection Target** field in Settings. This supports iframe targeting with syntax like `iframe >>> head`.
+
+## Settings Management
+
+### Per-Site Configuration
+
+All configuration (Bundle URL, Context, Intercepts) is saved per hostname. This allows you to maintain different settings for different development environments and client sites.
+
+### Reset Options
+
+- **Reset Site**: Clear all settings for the current hostname and return to defaults
+- **Reset All**: Clear all extension data across all hostnames (requires confirmation)
+
+## Development
+
+### Setup
+
+```bash
 npm install
 ```
 
-Then you can run build in order to compile
-```
+### Build
+
+Compile the extension for production:
+
+```bash
 npm run build
 ```
 
-Then you can run dev for hot-reloads (of vue changes only)
-```
+Output will be in the `release/` directory.
+
+### Development Mode
+
+Run with hot-reload for Vue components:
+
+```bash
 npm run dev
 ```
 
-Keep in mind if you make changes to something other than a vue component, such as background.js or assets directory, you will need to refresh the extension in the extensions tab. Sometimes removing and re-loading is the only way to see certain changes. 
+**Note**: Changes to non-Vue files (like `background.ts`, manifest, or assets) require manually refreshing the extension in `chrome://extensions/`. In some cases, you may need to remove and reload the extension completely.
+
+### Project Structure
+
+```
+src/
+├── components/
+│   ├── popup.vue              # Main popup container
+│   └── popup/
+│       ├── popup-config.vue   # Configuration tab
+│       ├── popup-settings.vue # Settings tab
+│       ├── popup-header.vue   # Header with logo and controls
+│       └── popup-controller.vue # Controller detail display
+├── entry/
+│   ├── background.ts          # Service worker
+│   ├── inject.ts              # Content script injection
+│   ├── loader.ts              # Script loader
+│   ├── popup.ts               # Popup entry point
+│   └── scraper.ts             # Integration detection
+├── types/                     # TypeScript definitions
+└── utilities/                 # Helper functions
+```
+
+### Tech Stack
+
+- **Framework**: Vue 3 with Composition API
+- **Language**: TypeScript
+- **Styling**: SCSS
+- **Icons**: Font Awesome
+- **Build Tool**: Vue CLI / Webpack
+- **Chrome APIs**: Declarative Net Request, Storage, Tabs, Scripting
+
+## Contributing
+
+When contributing to this extension:
+
+1. Follow the existing code style and component patterns
+2. Test thoroughly in Chrome before submitting PRs
+3. Update this README if adding new features
+4. Ensure the build completes without errors
+
+## License
+
+Internal Searchspring tool for development use. 
 
 

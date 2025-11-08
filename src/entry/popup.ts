@@ -18,9 +18,10 @@ import {
 	faAngleUp,
 	faAngleDown,
 	faCircleInfo,
+	faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faBan, faGear, faSave, faToggleOff, faUndo, faMagnifyingGlass, faList, faLocationCrosshairs, faGrip, faAngleUp, faAngleDown, faCircleInfo);
+library.add(faBan, faGear, faSave, faToggleOff, faUndo, faMagnifyingGlass, faList, faLocationCrosshairs, faGrip, faAngleUp, faAngleDown, faCircleInfo, faChevronRight);
 
 const snapp = createApp(popup, { version: packageJson.version });
 snapp.component('font-awesome-icon', FontAwesomeIcon);

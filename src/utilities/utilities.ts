@@ -1,16 +1,14 @@
 import { StoredData, HostnameConfig } from '../types/storage';
 
 export const defaultHostnameConfig: HostnameConfig = {
-	intercepts: `*://snapui.searchspring.io/*/bundle.js*
-*://cdn.searchspring.net/search/v3/js/searchspring.catalog.js*
-*://cdn.searchspring.net/search/v3/lts/searchspring.catalog.js*`,
-	forceInjection: false,
+	intercepts: `*://snapui.searchspring.io/*/bundle.js*`,
 	bundle: {
 		url: 'https://localhost:3333/bundle.js',
 		context: `shopper = {
   id: 'snapdev'
 };`,
 		mergeContext: true,
+		injectionTarget: '',
 	},
 };
 
@@ -87,7 +85,7 @@ export const getTabHostnameConfig = async (tabId: number): Promise<{ hostname: s
 			}
 		}
 	} catch (error) {
-		// Silently catching errors
+		// Tab may have been closed - silently ignore
 	}
 	return { hostname: null, config: JSON.parse(JSON.stringify(defaultHostnameConfig)) };
 };
@@ -157,8 +155,29 @@ export const getCurrentTabId = async (): Promise<string | undefined> => {
 	try {
 		const queryOptions = { active: true, currentWindow: true };
 		const [tab] = await chrome.tabs.query(queryOptions);
-		return `${tab.id}` || undefined;
+		if (tab?.id) {
+			return `${tab.id}`;
+		}
+		return undefined;
 	} catch (error) {
 		return undefined;
+	}
+};
+
+// Safely reload a tab, handling the case where it might have been closed
+export const safeReloadTab = async (tabId: number): Promise<boolean> => {
+	try {
+		// First check if the tab still exists
+		await chrome.tabs.get(tabId);
+		// If no error, the tab exists, so reload it
+		await chrome.tabs.reload(tabId);
+		return true;
+	} catch (error) {
+		// Tab doesn't exist or can't be reloaded - silently ignore
+		if (chrome.runtime.lastError) {
+			// Clear the lastError
+			void chrome.runtime.lastError;
+		}
+		return false;
 	}
 };
