@@ -75,7 +75,7 @@
 					{{ confirmClearAll ? 'confirm' : 'reset all' }}
 				</button>
 			</h3>
-			<div class="description">Reset the extension to factory defaults. Clears all settings, per-tab states, and active rules across all hostnames.</div>
+			<div class="description">Reset the extension to factory defaults.<br />Clears all settings, per-tab states, and active rules across all hostnames.</div>
 			
 			<div v-if="showStorage" class="storage-viewer">
 				<textarea
@@ -228,6 +228,9 @@ defineExpose({
 <style lang="scss" scoped>
 .page-settings {
 	padding: 10px;
+	background: #1a1a2e;
+	color: #e0e0e0;
+	z-index: 10;
 
 	.option {
 		margin-bottom: 5px;
@@ -242,6 +245,7 @@ defineExpose({
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			color: #ffffff;
 
 			.reset {
 				cursor: pointer;
@@ -260,15 +264,51 @@ defineExpose({
 		.description {
 			text-align: justify;
 			margin-bottom: 5px;
+			color: #b8b8b8;
+
+			code {
+				background: #2a2a3e;
+				color: #00AEEF;
+				padding: 2px 4px;
+				border-radius: 3px;
+			}
 
 			h4 {
 				padding: 0;
 				margin: 0;
+				color: #e0e0e0;
 			}
 		}
 		
 		input[type='text'] {
 			width: 100%;
+			background: #2a2a3e;
+			color: #e0e0e0;
+			border: 1px solid #3a3a4e;
+			
+			&::placeholder {
+				color: #666;
+			}
+
+			&:focus {
+				border-color: #00AEEF;
+				outline: none;
+			}
+		}
+
+		textarea {
+			background: #2a2a3e;
+			color: #e0e0e0;
+			border: 1px solid #3a3a4e;
+			
+			&::placeholder {
+				color: #666;
+			}
+
+			&:focus {
+				border-color: #00AEEF;
+				outline: none;
+			}
 		}
 	}
 
@@ -276,16 +316,23 @@ defineExpose({
 		display: flex;
 		justify-content: flex-end;
 		align-items: center;
-		margin-top: 10px;
+		margin-top: 20px;
 		margin-bottom: 0;
 		.version {
 			font-size: 12px;
 			font-weight: bold;
+			color: #888;
 		}
 		.github {
 			margin-left: 5px;
 			height: 14px;
 			width: 14px;
+			filter: brightness(0) invert(1);
+			opacity: 0.6;
+			
+			&:hover {
+				opacity: 1;
+			}
 		}
 	}
 
@@ -299,16 +346,16 @@ defineExpose({
 
 	.option.reset {
 		.reset-extension {
-			background: #5a94b3;
+			background: #4a7f9e;
 			color: white;
-			border: 1px solid #4a7f9e;
+			border: 1px solid #5a94b3;
 			font-weight: 600;
 			transition: all 0.2s ease;
 			
 			&:hover {
-				background: #4a7f9e;
+				background: #5a94b3;
 				transform: translateY(-1px);
-				box-shadow: 0 2px 4px rgba(90, 148, 179, 0.3);
+				box-shadow: 0 2px 4px rgba(90, 148, 179, 0.5);
 			}
 		}
 	}
@@ -323,11 +370,11 @@ defineExpose({
 		.view-storage {
 			cursor: pointer;
 			font-size: 14px;
-			color: #666;
+			color: #888;
 			transition: color 0.2s;
 			
 			&:hover {
-				color: #333;
+				color: #b8b8b8;
 			}
 			
 			&.active {
@@ -336,16 +383,16 @@ defineExpose({
 		}
 		
 		.clear-all-button {
-			background: #e74c3c;
+			background: #c23a2a;
 			color: white;
-			border: 1px solid #d43f2f;
+			border: 1px solid #e74c3c;
 			font-weight: 600;
 			transition: all 0.2s ease;
 			
 			&:hover {
-				background: #d43f2f;
+				background: #e74c3c;
 				transform: translateY(-1px);
-				box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+				box-shadow: 0 2px 4px rgba(231, 76, 60, 0.5);
 			}
 		}
 		
@@ -356,11 +403,12 @@ defineExpose({
 				width: 100%;
 				font-family: 'Courier New', monospace;
 				font-size: 11px;
-				border: 1px solid #ddd;
+				border: 1px solid #3a3a4e;
 				border-radius: 4px;
 				padding: 8px;
 				resize: vertical;
-				background: #f9f9f9;
+				background: #2a2a3e;
+				color: #e0e0e0;
 				max-height: 300px;
 				overflow-y: auto;
 			}

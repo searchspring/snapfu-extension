@@ -20,7 +20,7 @@
 					</span>
 				</h3>
 			</div>
-			
+
 			<!-- Loaded state -->
 			<div class="option integration" v-if="!integrationLoading && integrationDetails.version">
 				<h3 @click="() => emit('toggleIntegrationCollapsed')">
@@ -63,7 +63,7 @@
 				:class="{ 'alert-information': !enabled, 'alert-warning': enabled }">
 				<div v-if="enabled">
 					<strong>{{ integrationDetails.error?.message || 'Failed to load bundle. Check console for possible errors.'
-						}}</strong>
+					}}</strong>
 					<div v-if="integrationDetails.error?.details">{{ integrationDetails.error.details }}</div>
 				</div>
 				<div v-else>
@@ -103,13 +103,20 @@
 
 				<div class="description">Contextual variables to be injected with the script.</div>
 
-				<textarea placeholder="context variables should be here..." required="true" spellcheck="false"
-					:value="hostnameConfig.bundle?.context" @input="updateContext"
-					:rows="(hostnameConfig.bundle?.context || '').split('\n').length" />
-				<label class="context-merge">
-					<span>Merge context: </span>
-					<input :checked="hostnameConfig.bundle.mergeContext" @change="updateMergeContext" type="checkbox" />
-				</label>
+				<div class="textarea-tabbed">
+				<div class="textarea-wrapper">
+					<textarea placeholder="context variables should be here..." required="true" spellcheck="false"
+						:value="hostnameConfig.bundle?.context" @input="updateContext"
+						:rows="(hostnameConfig.bundle?.context || '').split('\n').length" />
+
+					<div class="textarea-tab">
+						<font-awesome-icon icon="code-merge" class="merge-icon" />
+						<Checkbox label="Merge with existing context" label-placement="right" size="small"
+							:model-value="hostnameConfig.bundle.mergeContext"
+							@update:model-value="(value: boolean) => updateMergeContextValue(value)" />
+					</div>
+				</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -120,6 +127,7 @@ import { defineProps, defineEmits } from 'vue';
 import { HostnameConfig, LocalData, HostnameConfigValue } from '../../types/storage';
 import { defaultHostnameConfig, deepCompare } from '../../utilities/utilities';
 import PopupController from './popup-controller.vue';
+import Checkbox from '../shared/checkbox.vue';
 
 const props = defineProps<{
 	currentHostname: string | null;
@@ -199,11 +207,10 @@ function updateContext(event: Event) {
 	emit('update:hostnameConfig', updated);
 }
 
-function updateMergeContext(event: Event) {
-	const target = event.target as HTMLInputElement;
+function updateMergeContextValue(checked: boolean) {
 	const updated = {
 		...props.hostnameConfig,
-		bundle: { ...props.hostnameConfig.bundle, mergeContext: target.checked }
+		bundle: { ...props.hostnameConfig.bundle, mergeContext: checked }
 	};
 	emit('update:hostnameConfig', updated);
 }
@@ -226,6 +233,7 @@ function updateMergeContext(event: Event) {
 		pointer-events: none;
 
 		.loading-message {
+			opacity: 0.7;
 			background: rgba(29, 73, 144, 0.95);
 			color: white;
 			padding: 10px 16px;
@@ -284,7 +292,7 @@ function updateMergeContext(event: Event) {
 				height: 12px;
 				width: 12px;
 				transition: all 0.2s ease;
-				
+
 				&:hover {
 					transform: translateY(-1px);
 					filter: drop-shadow(0 2px 4px rgba(242, 100, 124, 0.3));
@@ -317,21 +325,21 @@ function updateMergeContext(event: Event) {
 		&.skeleton {
 			border: 1px solid rgba(0, 0, 0, 0.3);
 			pointer-events: none;
-			
+
 			h3 {
 				cursor: default;
 			}
-			
+
 			.skeleton-bar {
 				display: inline-block;
 				background: rgba(0, 0, 0, 0.3);
 				border-radius: 2px;
-				
+
 				&.title-bar {
 					width: 120px;
 					height: 16px;
 				}
-				
+
 				&.stat-bar {
 					width: 50px;
 					height: 16px;
@@ -515,11 +523,51 @@ function updateMergeContext(event: Event) {
 		}
 	}
 
-	.option.context {
-		.context-merge {
-			display: inline-flex;
-			align-items: center;
-			cursor: pointer;
+	.textarea-tabbed {
+		display: flow-root;
+		margin-bottom: 10px;
+
+		.textarea-wrapper {
+			position: relative;
+			margin-bottom: 30px;
+
+			textarea {
+				border-bottom-right-radius: 0;
+			}
+
+			.textarea-tab {
+				position: absolute;
+				bottom: -30px;
+				margin: 0;
+				right: 0;
+				padding: 8px 10px;
+				background: linear-gradient(135deg, rgba(29, 73, 144, 0.04) 0%, rgba(29, 73, 144, 0.02) 100%);
+				border: 1px solid rgba(29, 73, 144, 0.12);
+				border-radius: 4px;
+				border-top-left-radius: 0;
+				border-top-right-radius: 0;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				transition: all 0.2s ease;
+
+				&:hover {
+					background: linear-gradient(135deg, rgba(29, 73, 144, 0.06) 0%, rgba(29, 73, 144, 0.03) 100%);
+					border-color: rgba(29, 73, 144, 0.2);
+
+					.merge-icon {
+						color: #1D4990;
+						transform: scale(1.05);
+					}
+				}
+
+				.merge-icon {
+					color: #4c76c8;
+					font-size: 14px;
+					flex-shrink: 0;
+					transition: all 0.2s ease;
+				}
+			}
 		}
 	}
 

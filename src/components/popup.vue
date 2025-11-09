@@ -11,33 +11,36 @@
 			@toggleSettings="toggleAppSettings"
 		/>
 
-		<PopupConfig
-			v-if="!state?.settings.show"
-			:currentHostname="state.currentHostname"
-			:hostnameConfig="state.hostnameConfig"
-			:savedHostnameConfig="state.savedHostnameConfig"
-			:integrationDetails="state.integration.details"
-			:integrationLoading="state.integration.loading"
-			:integrationCollapsed="state.integration.collapsed"
-			:enabled="state.enabled"
-			@reset="reset"
-			@set="set"
-			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
-			@toggleIntegrationCollapsed="() => state.integration.collapsed = !state.integration.collapsed"
-		/>
+		<div class="content-container" :class="{ 'settings-active': state.settings.show }">
+			<PopupConfig
+				:currentHostname="state.currentHostname"
+				:hostnameConfig="state.hostnameConfig"
+				:savedHostnameConfig="state.savedHostnameConfig"
+				:integrationDetails="state.integration.details"
+				:integrationLoading="state.integration.loading"
+				:integrationCollapsed="state.integration.collapsed"
+				:enabled="state.enabled"
+				@reset="reset"
+				@set="set"
+				@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+				@toggleIntegrationCollapsed="() => state.integration.collapsed = !state.integration.collapsed"
+			/>
 
-		<PopupSettings
-			v-if="state?.settings.show"
-			:version="props.version"
-			:currentHostname="state.currentHostname"
-			:hostnameConfig="state.hostnameConfig"
-			:savedHostnameConfig="state.savedHostnameConfig"
-			@reset="reset"
-			@resetAppConfig="resetAppConfig"
-			@clearAllStorage="clearAllStorage"
-			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
-			ref="settingsRef"
-		/>
+			<transition name="blinds">
+				<PopupSettings
+					v-if="state?.settings.show"
+					:version="props.version"
+					:currentHostname="state.currentHostname"
+					:hostnameConfig="state.hostnameConfig"
+					:savedHostnameConfig="state.savedHostnameConfig"
+					@reset="reset"
+					@resetAppConfig="resetAppConfig"
+					@clearAllStorage="clearAllStorage"
+					@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+					ref="settingsRef"
+				/>
+			</transition>
+		</div>
 	</div>
 </template>
 
@@ -463,6 +466,94 @@ body {
 		border: 1px solid #ddd;
 		box-sizing: border-box;
 		outline: none;
+	}
+
+	.content-container {
+		position: relative;
+		overflow: hidden;
+		display: grid;
+		grid-template-columns: 1fr;
+		// Default height transition (for closing)
+		transition: height 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+		
+		// Both children occupy the same grid cell
+		.page-config-wrapper,
+		.page-settings {
+			grid-row: 1;
+			grid-column: 1;
+			width: 100%;
+			box-sizing: border-box;
+		}
+		
+		// Default state: config determines height, settings is positioned absolutely
+		.page-config-wrapper {
+			opacity: 1;
+			z-index: 1;
+			position: relative;
+		}
+		
+		.page-settings {
+			z-index: 10;
+		}
+		
+		// When settings is NOT active, position settings absolutely so it doesn't affect height
+		&:not(.settings-active) {
+			.page-settings {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+			}
+			
+			.page-config-wrapper {
+				transition: opacity 0.3s ease 0.2s;
+			}
+		}
+		
+		// When settings IS active, position config absolutely so settings determines height
+		&.settings-active {
+			// Slower height transition when opening
+			transition: height 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+			
+			.page-config-wrapper {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				opacity: 0;
+				transition: opacity 0.2s ease 0.4s;
+			}
+			
+			.page-settings {
+				position: relative;
+			}
+		}
+	}
+
+	// Blinds transition for settings panel
+	.blinds-enter-active,
+	.blinds-leave-active {
+		transition: transform 0.1s cubic-bezier(0.3, 0.0, 0.6, 1), opacity 0.1s ease 0.05s;
+	}
+
+	.blinds-enter-from {
+		transform: translateY(-100%);
+		opacity: 0;
+	}
+
+	.blinds-enter-to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	.blinds-leave-from {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	.blinds-leave-to {
+		transform: translateY(-100%);
+		opacity: 0;
 	}
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-	<div class="header">
+	<div class="header" :class="{ 'settings-open': settingsOpen }">
 		<div class="logo-container">
 			<svg class="logo-bricks" :class="animationState" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
 				<path class="brick brick-1" d="M40,13.34c0,2.87-2.1,5.2-4.7,5.2h-10.42c-3.66,0-5.9-4.42-4.02-7.9l4.37-8.11c.86-1.57,2.37-2.53,4.02-2.53h6.03c2.59,0,4.7,2.34,4.7,5.2l.02,8.14Z"/>
@@ -73,14 +73,42 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 
 <style lang="scss" scoped>
 .header {
-	background: linear-gradient(45deg, #1d4990 0%, #f2647c 100%);
-	// background: linear-gradient(45deg, #1d4990 0%, #5ed1b3 100%);
+	position: relative;
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
 	justify-content: space-between;
 	align-items: center;
 	padding: 10px 5px;
+	overflow: hidden;
+	
+	// Base gradient (pink) - always visible
+	background: linear-gradient(45deg, #1d4990 0%, #f2647c 100%);
+	
+	// Green gradient overlay that fades in/out
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(45deg, #1d4990 0%, #5ed1b3 100%);
+		opacity: 0;
+		transition: opacity 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+		pointer-events: none;
+		z-index: 0;
+	}
+	
+	&.settings-open::before {
+		opacity: 1;
+	}
+	
+	// Ensure all child elements are above the gradient layers
+	> * {
+		position: relative;
+		z-index: 1;
+	}
 
 	.logo-container {
 		margin-left: 10px;
@@ -194,12 +222,12 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 				transform: scale(1.1);
 				
 				svg {
-					filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
+					filter: drop-shadow(0 2px 6px rgba(255, 193, 7, 0.5));
 				}
 			}
 
 			svg {
-				color: #fff;
+				color: #FFC107;
 				width: 27px;
 				height: 27px;
 				transition: filter 0.2s ease;
@@ -294,7 +322,7 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 			}
 
 			.open {
-				background: #00AEEF;
+				background: #FFC107;
 				position: absolute;
 				left: 18px;
 				top: 9px;
@@ -318,6 +346,7 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 			&.open {
 				svg {
 					color: #1D4990;
+					filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.1));
 					transform: rotate(30deg);
 				}
 			}
