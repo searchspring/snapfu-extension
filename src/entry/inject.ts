@@ -2,6 +2,63 @@ import { getHostnameFromUrl, getHostnameConfig, setHostnameConfig } from '../uti
 import { LocalData } from '../types/storage';
 
 /**
+ * Removes CSP meta tags from the document to prevent Content Security Policy restrictions.
+ * This function is called when the extension is enabled for the current tab.
+ */
+function removeCSPMetaTags() {
+	// Find all meta tags with http-equiv="Content-Security-Policy"
+	const cspMetaTags = document.querySelectorAll('meta[http-equiv]');
+	
+	cspMetaTags.forEach((metaTag) => {
+		const httpEquiv = metaTag.getAttribute('http-equiv');
+		if (httpEquiv && httpEquiv.toLowerCase() === 'content-security-policy') {
+			metaTag.remove();
+		}
+	});
+}
+
+/**
+ * Sets up a MutationObserver to watch for dynamically added CSP meta tags.
+ * If any are detected, they are immediately removed.
+ * Returns the observer so it can be disconnected later if needed.
+ */
+function observeCSPMetaTags(): MutationObserver {
+	const observer = new MutationObserver((mutations) => {
+		mutations.forEach((mutation) => {
+			mutation.addedNodes.forEach((node) => {
+				// Check if the added node is a meta tag
+				if (node.nodeName === 'META') {
+					const metaElement = node as HTMLMetaElement;
+					const httpEquiv = metaElement.getAttribute('http-equiv');
+					if (httpEquiv && httpEquiv.toLowerCase() === 'content-security-policy') {
+						metaElement.remove();
+					}
+				}
+				
+				// Check if the added node contains meta tags (e.g., a container with children)
+				if (node instanceof Element) {
+					const cspMetas = node.querySelectorAll('meta[http-equiv]');
+					cspMetas.forEach((metaTag) => {
+						const httpEquiv = metaTag.getAttribute('http-equiv');
+						if (httpEquiv && httpEquiv.toLowerCase() === 'content-security-policy') {
+							metaTag.remove();
+						}
+					});
+				}
+			});
+		});
+	});
+
+	// Observe the entire document for added nodes
+	observer.observe(document.documentElement, {
+		childList: true,
+		subtree: true
+	});
+
+	return observer;
+}
+
+/**
  * Attempts to detect the location of an existing Snap integration script.
  * Searches the main document and iframes to find where the original bundle is located.
  * Returns both the CSS selector for injection target and the script element itself.
@@ -324,6 +381,13 @@ function addScript(src: string) {
 				return;
 			}
 			const enabled = response.enabled || false;
+			
+			// If enabled, remove CSP meta tags and set up observer
+			if (enabled) {
+				removeCSPMetaTags();
+				observeCSPMetaTags();
+			}
+			
 			injectCode(loaderUrl, enabled);
 		});
 		

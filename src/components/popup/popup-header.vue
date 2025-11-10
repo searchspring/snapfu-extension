@@ -211,7 +211,7 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 
 		.save {
 			visibility: hidden;
-			transition: transform 0.2s ease;
+			transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 			
 			&.visible {
 				visibility: visible;
@@ -220,10 +220,7 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 			
 			&:hover {
 				transform: scale(1.1);
-				
-				svg {
-					filter: drop-shadow(0 2px 6px rgba(255, 193, 7, 0.5));
-				}
+				animation-play-state: paused;
 			}
 
 			svg {
@@ -269,10 +266,6 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 				.on {
 					box-shadow: 0 2px 8px rgba(0, 174, 239, 0.4);
 				}
-				
-				svg {
-					filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
-				}
 			}
 
 			.on {
@@ -307,11 +300,7 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 			
 			&:hover {
 				transform: scale(1.1);
-				
-				svg {
-					filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
-				}
-				
+
 				&:not(.open) svg {
 					transform: rotate(-15deg);
 				}

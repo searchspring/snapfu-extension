@@ -551,16 +551,6 @@ function updateMergeContextValue(checked: boolean) {
 				gap: 8px;
 				transition: all 0.2s ease;
 
-				&:hover {
-					background: linear-gradient(135deg, rgba(29, 73, 144, 0.06) 0%, rgba(29, 73, 144, 0.03) 100%);
-					border-color: rgba(29, 73, 144, 0.2);
-
-					.merge-icon {
-						color: #1D4990;
-						transform: scale(1.05);
-					}
-				}
-
 				.merge-icon {
 					color: #4c76c8;
 					font-size: 14px;

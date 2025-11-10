@@ -506,7 +506,7 @@ body {
 			}
 			
 			.page-config-wrapper {
-				transition: opacity 0.3s ease 0.2s;
+				transition: opacity 0.3s ease;
 			}
 		}
 		
