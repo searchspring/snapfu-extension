@@ -10,16 +10,17 @@
 					<span class="stat-value">{{ controller.store?.loaded ? '✓' : '○' }}</span>
 					<span class="stat-label">{{ controller.store?.loaded ? 'loaded' : 'not loaded' }}</span>
 				</span>
-				<span class="stat-divider">|</span>
-				<span class="stat-item results">
-					<span class="stat-value">{{ controller.store.results.length }}</span>
-					<span class="stat-label">res</span>
-				</span>
-				<span v-if="controller.config?.plugins !== undefined" class="stat-divider">|</span>
-				<span v-if="controller.config?.plugins !== undefined" class="stat-item plugins">
-					<span class="stat-value">{{ controller.config.plugins }}</span>
-					<span class="stat-label">plugin{{ controller.config.plugins === 1 ? '' : 's' }}</span>
-				</span>
+			<span v-if="controller.store?.loaded" class="stat-divider">|</span>
+			<span v-if="controller.store?.loaded" class="stat-item results">
+				<span class="stat-value">{{ controller.store.results.length }} {{ controller.store?.pagination?.totalResults ? `/${ controller.store?.pagination?.totalResults }` : '' }}</span>
+				<span class="stat-label">res</span>
+			</span>
+
+			<span v-if="controller.config?.plugins !== undefined" class="stat-divider">|</span>
+			<span v-if="controller.config?.plugins !== undefined" class="stat-item plugins">
+				<span class="stat-value">{{ controller.config.plugins }}</span>
+				<span class="stat-label">plugins</span>
+			</span>
 			</span>
 		</div>
 

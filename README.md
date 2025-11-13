@@ -1,6 +1,6 @@
 # Athos Commerce Snapfu Extension
 
-A Chrome extension for Searchspring developers to inject, test, and debug Snap bundles on client sites. This tool allows you to override existing scripts, inject local development bundles, and control script loading behavior.
+A Chrome extension for Athos developers to inject, test, and debug Snap bundles on client sites. This tool allows you to override existing scripts, inject local development bundles, and control script loading behavior.
 
 ## Features
 
@@ -53,7 +53,7 @@ The **Bundle URL** field controls which Snap bundle script to inject onto the pa
 #### Quick Actions
 
 - **local** button: Sets URL to `https://localhost:3333/bundle.js` (default local development URL)
-- **cdn** button: Sets URL to `https://snapui.searchspring.io/siteid/branch/bundle.js` (CDN template)
+- **cdn** button: Sets URL to `https://snapui.athoscommerce.io/siteid/branch/bundle.js` (Athos Commerce CDN template)
 
 For CDN URLs, replace `siteid` and `branch` with your actual site ID and branch name. This requires that the `@searchspring/snap-action` GitHub Action has successfully deployed to the specified branch.
 
@@ -73,7 +73,7 @@ Add custom context variables to be injected with the bundle script. These variab
 
 When a Snap bundle is loaded, the extension displays:
 
-- **Site ID**: The Searchspring site identifier
+- **Site ID**: The Athos site identifier
 - **Version**: The loaded Snap bundle version
 - **Controllers**: Count and details of active Snap controllers
 
@@ -99,9 +99,8 @@ The extension can block network requests to prevent conflicts with existing scri
 By default, the extension blocks these common Snap and legacy script URLs:
 
 ```
+*://snapui.athoscommerce.io/*/bundle.js*
 *://snapui.searchspring.io/*/bundle.js*
-*://cdn.searchspring.net/search/v3/js/searchspring.catalog.js*
-*://cdn.searchspring.net/search/v3/lts/searchspring.catalog.js*
 ```
 
 URL patterns support wildcards (`*`) for flexible matching.
@@ -190,6 +189,6 @@ When contributing to this extension:
 
 ## License
 
-Internal Searchspring tool for development use. 
+Internal Athos tool for development use. 
 
 

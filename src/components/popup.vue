@@ -18,14 +18,14 @@
 				:savedHostnameConfig="state.savedHostnameConfig"
 				:integrationDetails="state.integration.details"
 				:integrationLoading="state.integration.loading"
-				:integrationCollapsed="state.integration.collapsed"
+				:integrationCollapsed="state.hostnameConfig.integrationCollapsed"
 				:enabled="state.enabled"
 				@reset="reset"
 				@set="set"
 				@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
-				@toggleIntegrationCollapsed="() => state.integration.collapsed = !state.integration.collapsed"
+				@toggleIntegrationCollapsed="toggleIntegrationCollapsed"
+				@reloadTab="reloadCurrentTab"
 			/>
-
 			<transition name="blinds">
 				<PopupSettings
 					v-if="state?.settings.show"
@@ -56,8 +56,6 @@ import {
 	getConfig, 
 	setConfig, 
 	deepCompare, 
-	getCurrentTabId, 
-	getCurrentHostname,
 	getHostnameConfig,
 	setHostnameConfig,
 	getTabEnabled,
@@ -80,7 +78,6 @@ const state = reactive({
 	integration: {
 		details: {} as LocalData,
 		loading: true,
-		collapsed: true,
 	},
 	config: {} as StoredData,
 	savedConfig: {} as StoredData,
@@ -92,65 +89,59 @@ const state = reactive({
 });
 
 onMounted(async () => {
+	// Get tab info once and derive everything from it
+	let tab;
+	try {
+		[tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+	} catch {
+		// Can't get tab info
+		return;
+	}
+	
+	const tabId = tab.id || null;
+	const url = tab.url || '';
+	const isHttpUrl = url.startsWith('http://') || url.startsWith('https://');
+	
+	// Extract hostname from URL directly instead of using getCurrentHostname
+	let hostname: string | null = null;
+	try {
+		const urlObj = new URL(url);
+		hostname = urlObj.hostname;
+	} catch {
+		// Invalid URL
+	}
+	
+	const validHostname = isHttpUrl ? hostname : null;
+	state.currentHostname = validHostname;
+	state.currentTabId = tabId;
+	
+	// Fetch data sequentially (parallel loading causes rendering issues)
 	const config = await getConfig();
 	state.config = config;
 	state.savedConfig = JSON.parse(JSON.stringify(config));
-
-	// Get current hostname and its config
-	const hostname = await getCurrentHostname();
 	
-	// Only show hostname for valid http/https URLs
-	let validHostname: string | null = null;
-	if (hostname) {
-		try {
-			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-			const url = tab.url || '';
-			if (url.startsWith('http://') || url.startsWith('https://')) {
-				validHostname = hostname;
-			}
-		} catch {
-			// If we can't get the tab URL, don't show hostname
-		}
-	}
+	// Get hostname config
+	const hostnameConfig = validHostname 
+		? await getHostnameConfig(validHostname) 
+		: JSON.parse(JSON.stringify(defaultHostnameConfig));
+	state.hostnameConfig = hostnameConfig;
+	state.savedHostnameConfig = JSON.parse(JSON.stringify(hostnameConfig));
 	
-	state.currentHostname = validHostname;
+	// Get enabled state
+	const enabled = tabId ? await getTabEnabled(tabId) : false;
+	state.enabled = enabled;
 	
-	if (validHostname) {
-		const hostnameConfig = await getHostnameConfig(validHostname);
-		state.hostnameConfig = hostnameConfig;
-		state.savedHostnameConfig = JSON.parse(JSON.stringify(hostnameConfig));
-	} else {
-		state.hostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
-		state.savedHostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
-	}
-
-	// Get currentTabId and enabled state
-	const tabIdStr = await getCurrentTabId();
-	const tabId = tabIdStr ? Number(tabIdStr) : null;
-	state.currentTabId = tabId;
-	
+	// Set integration details if available
 	if (tabId) {
-		state.enabled = await getTabEnabled(tabId);
-		
-		// Check if we already have integration data for this tab
-		const storedLocalData = await chrome.storage.local.get(String(tabId));
-		const existingData = storedLocalData[tabId];
+		const localData = await chrome.storage.local.get(String(tabId));
+		const existingData = (localData as any)[tabId];
 		if (existingData?.timestamp) {
 			// We have existing data, use it and don't show loading
 			state.integration.details = existingData;
 			state.integration.loading = false;
 		} else {
-			// No existing data - check if we should show loading based on URL scheme
-			if (hostname) {
-				try {
-					const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-					const url = tab.url || '';
-					// Only load for http/https URLs (actual web pages that can be scraped)
-					state.integration.loading = url.startsWith('http://') || url.startsWith('https://');
-				} catch {
-					state.integration.loading = false;
-				}
-			}
+			// No existing data - show loading only for http/https URLs
+			state.integration.loading = isHttpUrl;
 		}
 	}
 
@@ -348,6 +339,26 @@ function toggleAppSettings() {
 	state.settings.show = !state.settings.show;
 	if (!state.settings.show && settingsRef.value) {
 		settingsRef.value.resetConfirmations();
+	}
+}
+
+async function toggleIntegrationCollapsed() {
+	// Toggle the collapsed state
+	state.hostnameConfig.integrationCollapsed = !state.hostnameConfig.integrationCollapsed;
+	
+	// Update saved state immediately to prevent flash of unsaved changes indicator
+	state.savedHostnameConfig.integrationCollapsed = state.hostnameConfig.integrationCollapsed;
+	
+	// Auto-save this preference without triggering a reload
+	if (state.currentHostname) {
+		await setHostnameConfig(state.currentHostname, state.hostnameConfig);
+	}
+}
+
+async function reloadCurrentTab() {
+	if (state.currentTabId) {
+		await prepareForReload();
+		await safeReloadTab(state.currentTabId);
 	}
 }
 

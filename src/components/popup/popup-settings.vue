@@ -11,7 +11,7 @@
 					title="reset intercepts"
 				/>
 			</h3>
-			<div class="description">Intercepts are used for blocking network requests. This helps prevent multiple bundles from loading.</div>
+			<div class="description">Intercepts are used for blocking network requests, primarily to prevent multiple bundles from loading.</div>
 
 			<textarea
 				placeholder="intercepts should be here..."
@@ -36,9 +36,7 @@
 			</h3>
 
 			<div class="description">
-				CSS selector for script injection location. Leave empty for default (document root).<br />
-				For iframes, use <code>&gt;&gt;&gt;</code> to traverse: <code>iframe.my-frame &gt;&gt;&gt; div.target</code><br />
-				For nested iframes: <code>iframe.outer &gt;&gt;&gt; iframe.inner &gt;&gt;&gt; div.target</code>
+				CSS selector for script injection location. Leave empty for default (document root).
 			</div>
 
 			<input 
@@ -47,6 +45,13 @@
 				type="text" 
 				placeholder="e.g., body, iframe >>> head, iframe.outer >>> iframe.inner >>> body"
 			/>
+
+			<div class="description">
+				<br />
+				For iframes, use <code>&gt;&gt;&gt;</code> to traverse: <code>iframe.my-frame &gt;&gt;&gt; div.target</code><br />
+				For nested iframes: <code>iframe.outer &gt;&gt;&gt; iframe.inner &gt;&gt;&gt; div.target</code>
+			</div>
+
 		</div>
 
 		<div v-if="currentHostname" class="option reset" v-show="savedConfigDiffersFromDefaults()">

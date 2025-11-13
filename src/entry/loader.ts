@@ -11,12 +11,12 @@ script.innerHTML = context.trim();
 // Add error handler to capture script loading failures
 script.addEventListener('error', () => {
 	// Build error message and details separately
-	const errorMessage = `Failed to load: ${url}`;
+	const errorMessage = 'Failed to load bundle!';
 	let errorDetails = '';
 	
 	// Add context-specific hints based on the URL
 	if (url?.includes('localhost') || url?.includes('127.0.0.1')) {
-		errorDetails = 'Check if local server is running and certificate is trusted';
+		errorDetails = 'Check certificate is trusted and local network access is allowed';
 	} else if (url?.startsWith('https://')) {
 		errorDetails = 'Check network connection and CORS/CSP settings';
 	} else if (url?.startsWith('http://')) {
@@ -28,7 +28,8 @@ script.addEventListener('error', () => {
 		detail: {
 			error: {
 				message: errorMessage,
-				details: errorDetails
+				details: errorDetails,
+				url: url
 			},
 			url: url,
 			timestamp: Date.now()

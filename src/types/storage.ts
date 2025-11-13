@@ -7,6 +7,7 @@ export type HostnameConfig = {
 		context: string;
 		injectionTarget: string;
 	};
+	integrationCollapsed: boolean;
 };
 
 // Type for any value that can be found within HostnameConfig
@@ -25,6 +26,13 @@ export type ControllerInfo = {
 	store: {
 		loaded: boolean;
 		results: unknown[];
+		pagination?: {
+			defaultPageSize: number;
+			page: number;
+			pageSize: number;
+			totalPages: number;
+			totalResults: number;
+		};
 	};
 	collapsed: boolean;
 	config?: {
@@ -49,8 +57,10 @@ export type LocalData = {
 		[variable: string]: unknown;
 	};
 	enabled?: boolean; // Per-tab enabled state
+	integrationUrl?: string; // The bundle URL that was used to load the integration
 	error?: {
 		message: string;
 		details?: string;
+		url?: string;
 	};
 };

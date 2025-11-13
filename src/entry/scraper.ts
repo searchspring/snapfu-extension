@@ -42,12 +42,9 @@ setInterval(() => {
 			let configDetails;
 			if (config) {
 				// Count plugins
-				let pluginCount;
+				let pluginCount = 0;
 				if (config.plugins && Array.isArray(config.plugins)) {
 					pluginCount = config.plugins.filter((plugin: any) => Array.isArray(plugin)).length;
-					if (pluginCount === 0) {
-						pluginCount = undefined;
-					}
 				}
 				
 				configDetails = {
@@ -58,7 +55,6 @@ setInterval(() => {
 				
 				// Remove undefined properties
 				if (!configDetails.globals) delete configDetails.globals;
-				if (!configDetails.plugins) delete configDetails.plugins;
 				if (!configDetails.settings) delete configDetails.settings;
 				
 				// If all properties are undefined, set configDetails to undefined
@@ -73,6 +69,7 @@ setInterval(() => {
 				store: {
 					loaded: store.loaded,
 					results: results ? new Array(results.length) : [],
+					pagination: store.pagination,
 				},
 				collapsed: true,
 				config: configDetails,
@@ -96,10 +93,11 @@ setInterval(() => {
 				controller.store.loaded === controller2.store.loaded &&
 				controller.store.results.length === controller2.store.results.length;
 			
-			// Deep comparison for config
+			// Deep comparison for config and pagination
 			const configMatch = JSON.stringify(controller.config) === JSON.stringify(controller2.config);
+			const paginationMatch = JSON.stringify(controller.store.pagination) === JSON.stringify(controller2.store.pagination);
 			
-			return basicPropsMatch && configMatch;
+			return basicPropsMatch && configMatch && paginationMatch;
 		});
 
 		const versionsAreTheSame = data.version === newData.version;

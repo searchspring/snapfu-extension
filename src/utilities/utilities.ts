@@ -1,7 +1,7 @@
 import { StoredData, HostnameConfig } from '../types/storage';
 
 export const defaultHostnameConfig: HostnameConfig = {
-	intercepts: `*://snapui.searchspring.io/*/bundle.js*`,
+	intercepts: `*://snapui.athoscommerce.io/*/bundle.js*\n*://snapui.searchspring.io/*/bundle.js*`,
 	bundle: {
 		url: 'https://localhost:3333/bundle.js',
 		context: `shopper = {
@@ -10,6 +10,7 @@ export const defaultHostnameConfig: HostnameConfig = {
 		mergeContext: true,
 		injectionTarget: '',
 	},
+	integrationCollapsed: false,
 };
 
 export const defaultConfig: StoredData = {
@@ -93,8 +94,9 @@ export const getTabHostnameConfig = async (tabId: number): Promise<{ hostname: s
 // Get per-tab enabled state from local storage
 export const getTabEnabled = async (tabId: number): Promise<boolean> => {
 	try {
-		const data = await chrome.storage.local.get();
-		const tabData = data[tabId];
+		const key = String(tabId);
+		const data = await chrome.storage.local.get(key);
+		const tabData = data[key];
 		return tabData?.enabled ?? false; // default to false
 	} catch (error) {
 		return false;

@@ -1,6 +1,10 @@
 import { StoredData } from '@/types/storage';
 import { getConfig, getCurrentTabId, getTabEnabled, getHostnameFromUrl } from '../utilities/utilities';
 
+// Mutex to prevent concurrent rule updates
+let isUpdatingRules = false;
+let pendingRuleUpdate: Promise<void> | null = null;
+
 // Clear any old dynamic rules from previous versions (we now use session rules)
 chrome.declarativeNetRequest.getDynamicRules((existingRules) => {
 	if (existingRules.length > 0) {
@@ -36,8 +40,8 @@ chrome.storage.onChanged.addListener(async (_changes, area) => {
 				const tabId = Number(key);
 				if (!isNaN(tabId) && _changes[key].newValue?.enabled !== undefined) {
 					shouldUpdateIntercepts = true;
-					// Don't update icon immediately - let the tab update event handle it
-					// This prevents flashing during page reload
+					// Update icon immediately when enabled state changes
+					await updateIconForTab(tabId);
 				}
 			}
 			
@@ -62,7 +66,9 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 
 // Watch for tab URL changes and page loads to update icon
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
-	if (changeInfo.url || changeInfo.status === 'complete') {
+	// Update icon on URL change or when page starts loading (not just when complete)
+	// This ensures icon updates immediately when page reload starts
+	if (changeInfo.url || changeInfo.status === 'loading' || changeInfo.status === 'complete') {
 		try {
 			await updateIconForTab(tabId);
 		} catch (error) {
@@ -122,7 +128,29 @@ async function updateIconForTab(tabId: number) {
 }
 
 async function checkForIntercepts(config: StoredData) {
+	// Prevent concurrent rule updates by using a mutex
+	if (isUpdatingRules) {
+		// If an update is already in progress, wait for it and then start a new one
+		if (pendingRuleUpdate) {
+			await pendingRuleUpdate;
+		}
+	}
+	
+	// Set the lock
+	isUpdatingRules = true;
+	pendingRuleUpdate = performRuleUpdate(config);
+	
+	try {
+		await pendingRuleUpdate;
+	} finally {
+		isUpdatingRules = false;
+		pendingRuleUpdate = null;
+	}
+}
+
+async function performRuleUpdate(config: StoredData) {
 	const rules: chrome.declarativeNetRequest.Rule[] = [];
+	// Simple sequential IDs starting from 1 - no collisions since we serialize updates
 	let ruleId = 1;
 
 	// Get all tabs and create per-tab rules for enabled tabs

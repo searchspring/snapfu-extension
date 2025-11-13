@@ -1,7 +1,7 @@
 <template>
 	<div class="page-config-wrapper">
 		<div v-if="integrationLoading" class="loading-overlay">
-			<div class="loading-message">loading...</div>
+			<div class="loading-message">Loading...</div>
 		</div>
 
 		<div class="page-config" :class="{ loading: integrationLoading }">
@@ -31,12 +31,12 @@
 								<span class="stat-label">ID:</span>
 								<span class="stat-value">{{ integrationDetails.context.siteId }}</span>
 							</span>
-							<span v-if="integrationDetails.version" class="stat-divider">|</span>
+							<span v-if="integrationDetails.context?.siteId" class="stat-divider">|</span>
 							<span v-if="integrationDetails.version" class="stat-item version">
 								<span class="stat-label">v</span>
 								<span class="stat-value">{{ integrationDetails.version }}</span>
 							</span>
-							<span v-if="integrationDetails.controllers?.length" class="stat-divider">|</span>
+							<span v-if="integrationDetails.version && integrationDetails.controllers?.length" class="stat-divider">|</span>
 							<span v-if="integrationDetails.controllers?.length" class="stat-item controllers">
 								<span class="stat-value">{{ integrationDetails.controllers.length }}</span>
 								<span class="stat-label">{{ integrationDetails.controllers.length === 1 ? 'ctrl' : 'ctrls' }}</span>
@@ -47,8 +47,13 @@
 
 				<transition name="expand">
 					<div class="integration-details" v-if="!integrationCollapsed">
+
+						<div v-if="integrationDetails.integrationUrl" class="integration-url">
+							{{ integrationDetails.integrationUrl }}
+						</div>
+
 						<div class="description controllers">
-							<div :key="key" v-for="(controller, key) in integrationDetails.controllers"
+							<div :key="controller.id" v-for="controller in integrationDetails.controllers"
 								@click="() => (controller.collapsed = !controller.collapsed)" class="controller-wrapper">
 								<PopupController :controller="controller"
 									@toggleGlobals="() => controller.config && controller.config.globals && (controller.config.globals.collapsed = !controller.config.globals.collapsed)"
@@ -60,19 +65,35 @@
 			</div>
 
 			<div v-if="!integrationLoading && currentHostname && !integrationDetails.version"
-				:class="{ 'alert-information': !enabled, 'alert-warning': enabled }">
-				<div v-if="enabled">
-					<strong>{{ integrationDetails.error?.message || 'Failed to load bundle. Check console for possible errors.'
-					}}</strong>
-					<div v-if="integrationDetails.error?.details">{{ integrationDetails.error.details }}</div>
-				</div>
-				<div v-else>
-					No Snap integration found.
+				:class="{ 'alert': true, 'alert-information': !enabled, 'alert-warning': enabled }">
+				<div class="alert-content">
+					<div class="alert-message">
+						<div v-if="enabled">
+							<strong>
+								{{ integrationDetails.error?.message || 'Failed to load bundle. Check console for possible errors.'
+								}}
+							</strong>
+
+							<div v-if="integrationDetails.error?.details">{{ integrationDetails.error.details }}</div>
+							<div class="error-url" v-if="integrationDetails.error?.url">
+								<a :href="integrationDetails.error.url" target="_blank"
+									rel="noopener noreferrer">{{ integrationDetails.error.url }}</a>
+							</div>
+						</div>
+						<div v-else>
+							No Snap integration found.
+						</div>
+					</div>
+					<button class="refresh-button" @click="reloadTab" title="Reload tab">
+						<font-awesome-icon icon="sync-alt" />
+					</button>
 				</div>
 			</div>
 
-			<div v-if="!currentHostname" class="alert-warning">
-				Extension only works on website pages. Please navigate to a website to use the extension.
+			<div v-if="!currentHostname" class="alert alert-warning">
+				<strong>Extension only works on website pages.</strong>
+				<br />
+				Please navigate to a website to use the extension.
 			</div>
 
 			<div v-if="currentHostname" class="option url">
@@ -81,7 +102,7 @@
 						Bundle URL
 						<span class="url-actions">
 							<button class="url-cdn"
-								@click="set('bundle.url', 'https://snapui.searchspring.io/siteid/branch/bundle.js')">cdn</button>
+								@click="set('bundle.url', 'https://snapui.athoscommerce.io/siteid/branch/bundle.js')">cdn</button>
 							<button class="url-local" @click="set('bundle.url', 'https://localhost:3333/bundle.js')">local</button>
 						</span>
 					</span>
@@ -104,18 +125,18 @@
 				<div class="description">Contextual variables to be injected with the script.</div>
 
 				<div class="textarea-tabbed">
-				<div class="textarea-wrapper">
-					<textarea placeholder="context variables should be here..." required="true" spellcheck="false"
-						:value="hostnameConfig.bundle?.context" @input="updateContext"
-						:rows="(hostnameConfig.bundle?.context || '').split('\n').length" />
+					<div class="textarea-wrapper">
+						<textarea placeholder="context variables should be here..." required="true" spellcheck="false"
+							:value="hostnameConfig.bundle?.context" @input="updateContext"
+							:rows="(hostnameConfig.bundle?.context || '').split('\n').length" />
 
-					<div class="textarea-tab">
-						<font-awesome-icon icon="code-merge" class="merge-icon" />
-						<Checkbox label="Merge with existing context" label-placement="right" size="small"
-							:model-value="hostnameConfig.bundle.mergeContext"
-							@update:model-value="(value: boolean) => updateMergeContextValue(value)" />
+						<div class="textarea-tab">
+							<font-awesome-icon icon="code-merge" class="merge-icon" />
+							<Checkbox label="Merge with page context" label-placement="right" size="small"
+								:model-value="hostnameConfig.bundle.mergeContext"
+								@update:model-value="(value: boolean) => updateMergeContextValue(value)" />
+						</div>
 					</div>
-				</div>
 				</div>
 			</div>
 		</div>
@@ -144,6 +165,7 @@ const emit = defineEmits<{
 	(e: 'set', configPath: string, value: HostnameConfigValue | undefined): void;
 	(e: 'update:hostnameConfig', value: HostnameConfig): void;
 	(e: 'toggleIntegrationCollapsed'): void;
+	(e: 'reloadTab'): void;
 }>();
 
 function detectChanges(configPath = '', location = 'saved') {
@@ -214,6 +236,10 @@ function updateMergeContextValue(checked: boolean) {
 	};
 	emit('update:hostnameConfig', updated);
 }
+
+function reloadTab() {
+	emit('reloadTab');
+}
 </script>
 
 <style lang="scss" scoped>
@@ -233,8 +259,7 @@ function updateMergeContextValue(checked: boolean) {
 		pointer-events: none;
 
 		.loading-message {
-			opacity: 0.7;
-			background: rgba(29, 73, 144, 0.95);
+			background: #00AEEF;
 			color: white;
 			padding: 10px 16px;
 			border-radius: 4px;
@@ -269,7 +294,7 @@ function updateMergeContextValue(checked: boolean) {
 
 	&.loading {
 		pointer-events: none;
-		opacity: 0.3;
+		opacity: 0.2;
 	}
 
 	.option {
@@ -366,7 +391,6 @@ function updateMergeContextValue(checked: boolean) {
 			gap: 10px;
 			font-size: 11px;
 			font-family: 'Avenir', Helvetica, Arial, sans-serif;
-			background: rgba(255, 255, 255, 0.5);
 			padding: 4px 10px;
 			border-radius: 2px;
 			border-left: 3px solid transparent;
@@ -387,7 +411,7 @@ function updateMergeContextValue(checked: boolean) {
 				.stat-value {
 					color: #e91e63;
 					font-weight: 700;
-					text-transform: uppercase;
+					text-transform: lowercase;
 					letter-spacing: 0.5px;
 				}
 			}
@@ -441,7 +465,15 @@ function updateMergeContextValue(checked: boolean) {
 		}
 
 		.integration-details {
-			margin-top: 18px;
+			.integration-url {
+				margin-bottom: 15px;
+				font-size: 9px;
+				color: #1D4990;
+				font-family: 'Monaco', 'Courier New', monospace;
+				font-weight: 500;
+				word-break: break-all;
+				line-height: 1.5;
+			}
 		}
 
 
@@ -452,26 +484,86 @@ function updateMergeContextValue(checked: boolean) {
 		}
 	}
 
-	.alert-information {
-		background: rgba(29, 73, 144, 0.04);
-		border: 1px solid rgba(29, 73, 144, 0.15);
+	.alert {
 		padding: 12px 16px;
 		border-radius: 4px;
-		color: rgba(29, 73, 144, 0.75);
 		font-size: 13px;
 		font-weight: 500;
 		margin-bottom: 15px;
+
+		.alert-content {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.alert-message {
+			flex: 1;
+		}
+
+		.refresh-button {
+			flex-shrink: 0;
+			background: transparent;
+			width: 32px;
+			height: 32px;
+			border-radius: 4px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			padding: 0;
+			transition: transform 0.3s ease;
+
+			svg {
+				width: 14px;
+				height: 14px;
+			}
+
+			&:hover {
+				transform: rotate(-180deg) scale(1.2);
+			}
+
+			&:active {
+				transform: translateY(0);
+			}
+		}
+	}
+
+	.alert-information {
+		background: rgba(29, 73, 144, 0.04);
+		border: 1px solid rgba(29, 73, 144, 0.15);
+		color: rgba(29, 73, 144, 0.75);
+
+		.refresh-button {
+			border-color: rgba(29, 73, 144, 0.3);
+			color: rgba(29, 73, 144, 0.75);
+		}
 	}
 
 	.alert-warning {
 		background: rgb(225 31 31 / 12%);
 		border: 1px solid rgb(225 31 31 / 20%);
-		padding: 12px 16px;
-		border-radius: 4px;
 		color: rgb(225 31 31 / 85%);
-		font-size: 13px;
-		font-weight: 500;
-		line-height: 1.5;
+
+		a {
+			color: rgb(225 31 31 / 85%);
+		}
+
+		.error-url {
+			margin-top: 5px;
+
+			a {
+				font-size: 10px;
+				color: rgb(225 31 31 / 85%);
+				text-decoration: underline;
+			}
+		}
+
+		.refresh-button {
+			border-color: rgb(225 31 31 / 30%);
+			color: rgb(225 31 31 / 85%);
+		}
 	}
 
 	.option.url {
@@ -543,6 +635,7 @@ function updateMergeContextValue(checked: boolean) {
 				padding: 8px 10px;
 				background: linear-gradient(135deg, rgba(29, 73, 144, 0.04) 0%, rgba(29, 73, 144, 0.02) 100%);
 				border: 1px solid rgba(29, 73, 144, 0.12);
+				border-top: 0;
 				border-radius: 4px;
 				border-top-left-radius: 0;
 				border-top-right-radius: 0;

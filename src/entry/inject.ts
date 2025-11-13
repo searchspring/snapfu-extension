@@ -8,7 +8,7 @@ import { LocalData } from '../types/storage';
 function removeCSPMetaTags() {
 	// Find all meta tags with http-equiv="Content-Security-Policy"
 	const cspMetaTags = document.querySelectorAll('meta[http-equiv]');
-	
+
 	cspMetaTags.forEach((metaTag) => {
 		const httpEquiv = metaTag.getAttribute('http-equiv');
 		if (httpEquiv && httpEquiv.toLowerCase() === 'content-security-policy') {
@@ -34,7 +34,7 @@ function observeCSPMetaTags(): MutationObserver {
 						metaElement.remove();
 					}
 				}
-				
+
 				// Check if the added node contains meta tags (e.g., a container with children)
 				if (node instanceof Element) {
 					const cspMetas = node.querySelectorAll('meta[http-equiv]');
@@ -52,7 +52,7 @@ function observeCSPMetaTags(): MutationObserver {
 	// Observe the entire document for added nodes
 	observer.observe(document.documentElement, {
 		childList: true,
-		subtree: true
+		subtree: true,
 	});
 
 	return observer;
@@ -64,16 +64,16 @@ function observeCSPMetaTags(): MutationObserver {
  * Returns both the CSS selector for injection target and the script element itself.
  */
 function detectScriptLocationAndElement(): { injectionTarget: string; scriptElement: HTMLScriptElement | null } {
-	const snapScriptSelector = 'script[id^=searchspring], script[src*="snapui.searchspring.io"]';
-	
+	const snapScriptSelector = 'script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"], script[src*="snapui.athoscommerce.io"]';
+
 	// Helper to get parent selector
 	const getParentSelector = (element: Element | null): string => {
 		if (!element || !element.parentElement) {
 			return 'html';
 		}
-		
+
 		const parent = element.parentElement;
-		
+
 		// Check if parent is body or head
 		if (parent.tagName.toLowerCase() === 'body') {
 			return 'body';
@@ -81,38 +81,41 @@ function detectScriptLocationAndElement(): { injectionTarget: string; scriptElem
 		if (parent.tagName.toLowerCase() === 'head') {
 			return 'head';
 		}
-		
+
 		// For other elements, try to build a unique selector
 		if (parent.id) {
 			return `#${parent.id}`;
 		}
-		
+
 		if (parent.className) {
-			const classes = parent.className.trim().split(/\s+/).filter(c => c.length > 0);
+			const classes = parent.className
+				.trim()
+				.split(/\s+/)
+				.filter((c) => c.length > 0);
 			if (classes.length > 0) {
 				return `${parent.tagName.toLowerCase()}.${classes[0]}`;
 			}
 		}
-		
+
 		return parent.tagName.toLowerCase();
 	};
-	
+
 	// Check main document
 	const mainScript = document.querySelector(snapScriptSelector) as HTMLScriptElement;
 	if (mainScript) {
 		return {
 			injectionTarget: getParentSelector(mainScript),
-			scriptElement: mainScript
+			scriptElement: mainScript,
 		};
 	}
-	
+
 	// Check iframes
 	const iframes = Array.from(document.querySelectorAll('iframe'));
 	for (const iframe of iframes) {
 		try {
 			const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
 			if (!iframeDoc) continue;
-			
+
 			const iframeScript = iframeDoc.querySelector(snapScriptSelector) as HTMLScriptElement;
 			if (iframeScript) {
 				// Build iframe selector
@@ -120,26 +123,29 @@ function detectScriptLocationAndElement(): { injectionTarget: string; scriptElem
 				if (iframe.id) {
 					iframeSelector = `iframe#${iframe.id}`;
 				} else if (iframe.className) {
-					const classes = iframe.className.trim().split(/\s+/).filter(c => c.length > 0);
+					const classes = iframe.className
+						.trim()
+						.split(/\s+/)
+						.filter((c) => c.length > 0);
 					if (classes.length > 0) {
 						iframeSelector = `iframe.${classes[0]}`;
 					}
 				}
-				
+
 				const parentSelector = getParentSelector(iframeScript);
 				return {
 					injectionTarget: `${iframeSelector} >>> ${parentSelector}`,
-					scriptElement: iframeScript
+					scriptElement: iframeScript,
 				};
 			}
-			
+
 			// Check nested iframes (one level deep)
 			const nestedIframes = Array.from(iframeDoc.querySelectorAll('iframe'));
 			for (const nestedIframe of nestedIframes) {
 				try {
 					const nestedDoc = nestedIframe.contentDocument || nestedIframe.contentWindow?.document;
 					if (!nestedDoc) continue;
-					
+
 					const nestedScript = nestedDoc.querySelector(snapScriptSelector) as HTMLScriptElement;
 					if (nestedScript) {
 						// Build outer iframe selector
@@ -147,27 +153,33 @@ function detectScriptLocationAndElement(): { injectionTarget: string; scriptElem
 						if (iframe.id) {
 							outerSelector = `iframe#${iframe.id}`;
 						} else if (iframe.className) {
-							const classes = iframe.className.trim().split(/\s+/).filter(c => c.length > 0);
+							const classes = iframe.className
+								.trim()
+								.split(/\s+/)
+								.filter((c) => c.length > 0);
 							if (classes.length > 0) {
 								outerSelector = `iframe.${classes[0]}`;
 							}
 						}
-						
+
 						// Build inner iframe selector
 						let innerSelector = 'iframe';
 						if (nestedIframe.id) {
 							innerSelector = `iframe#${nestedIframe.id}`;
 						} else if (nestedIframe.className) {
-							const classes = nestedIframe.className.trim().split(/\s+/).filter(c => c.length > 0);
+							const classes = nestedIframe.className
+								.trim()
+								.split(/\s+/)
+								.filter((c) => c.length > 0);
 							if (classes.length > 0) {
 								innerSelector = `iframe.${classes[0]}`;
 							}
 						}
-						
+
 						const parentSelector = getParentSelector(nestedScript);
 						return {
 							injectionTarget: `${outerSelector} >>> ${innerSelector} >>> ${parentSelector}`,
-							scriptElement: nestedScript
+							scriptElement: nestedScript,
 						};
 					}
 				} catch (error) {
@@ -180,31 +192,72 @@ function detectScriptLocationAndElement(): { injectionTarget: string; scriptElem
 			continue;
 		}
 	}
-	
+
 	// No script found
 	return {
 		injectionTarget: '',
-		scriptElement: null
+		scriptElement: null,
 	};
 }
 
 async function injectCode(src: string, enabled: boolean) {
 	const hostname = getHostnameFromUrl(window.location.href);
-	
+
 	if (!hostname) {
 		return;
 	}
 
 	const hostnameConfig = await getHostnameConfig(hostname);
-	
+
+	// Always detect the original script to get the original bundle URL
+	const { scriptElement: detectedScript } = detectScriptLocationAndElement();
+	const originalBundleUrl = detectedScript?.getAttribute('src') || '';
+
+	// Store the integration URL (either original or configured) regardless of enabled state
+	try {
+		const tabId = await new Promise<number>((resolve, reject) => {
+			chrome.runtime.sendMessage({ text: 'getTabId' }, (response) => {
+				if (chrome.runtime.lastError) {
+					reject(chrome.runtime.lastError);
+				} else {
+					resolve(response);
+				}
+			});
+		});
+
+		if (tabId) {
+			const key = String(tabId);
+			const existing = await chrome.storage.local.get(key);
+
+			// If enabled, use the configured URL; otherwise use the original URL from the page
+			
+			// Create full URL for originalBundleUrl if it's relative
+			const fullOriginalBundleUrl = new URL(originalBundleUrl, window.location.origin).href;
+
+			const integrationUrl = enabled ? hostnameConfig.bundle.url : fullOriginalBundleUrl;
+
+			// Only store if we have a URL
+			if (integrationUrl) {
+				await chrome.storage.local.set({
+					[key]: {
+						...existing[key],
+						integrationUrl: integrationUrl,
+					},
+				});
+			}
+		}
+	} catch (error) {
+		// Silently catching errors
+	}
+
 	if (enabled) {
 		const scriptUrl = hostnameConfig.bundle.url;
 		const context = hostnameConfig.bundle.context;
 		const mergeContextOption = hostnameConfig.bundle.mergeContext;
 		let injectionTarget = hostnameConfig.bundle.injectionTarget;
 
-		// Detect the integration script location and element
-		const { injectionTarget: detectedTarget, scriptElement: detectedScript } = detectScriptLocationAndElement();
+		// Detect the integration script location (we already detected the script element above)
+		const { injectionTarget: detectedTarget } = detectScriptLocationAndElement();
 
 		// If injection target is not set, use the detected location ONLY if it's in an iframe (contains >>>)
 		if (!injectionTarget || injectionTarget.trim() === '') {
@@ -219,7 +272,7 @@ async function injectCode(src: string, enabled: boolean) {
 		// Use the detected script if available, otherwise search again
 		let script = detectedScript;
 		if (!script) {
-			const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[src*="snapui.searchspring.io"]'));
+			const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"], script[src*="snapui.athoscommerce.io"]'));
 			// Grab context from scripts (get the one with most content)
 			script = scripts
 				.sort((a, b) => {
@@ -234,7 +287,7 @@ async function injectCode(src: string, enabled: boolean) {
 
 		// Remove contexts if not merging
 		if (!mergeContextOption) {
-			const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[src*="snapui.searchspring.io"]'));
+			const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"], script[src*="snapui.athoscommerce.io"]'));
 			scripts.forEach((s) => {
 				s.innerHTML = '';
 			});
@@ -242,9 +295,9 @@ async function injectCode(src: string, enabled: boolean) {
 
 		// Check if the script has src and if the siteId is found in the src
 		let siteIdContext = '';
-		const siteIdMatches = script?.getAttribute('src')?.match(/.*snapui.searchspring.io\/([a-zA-Z0-9]{6})\//);
-		if (siteIdMatches && siteIdMatches.length > 1) {
-			siteIdContext = `siteId = "${siteIdMatches[1]}";\n`;
+		const siteIdMatches = script?.getAttribute('src')?.match(/.*snapui\.(searchspring|athoscommerce)\.io\/([a-zA-Z0-9]{6})\//);
+		if (siteIdMatches && siteIdMatches.length > 2) {
+			siteIdContext = `siteId = "${siteIdMatches[2]}";\n`;
 		}
 
 		// Grab attributes from script (if found)
@@ -274,7 +327,7 @@ async function injectCode(src: string, enabled: boolean) {
 				script.setAttribute(key, integrationAttributes[key]);
 			});
 
-			if (scriptContext){
+			if (scriptContext) {
 				script.innerHTML = scriptContext;
 			}
 			(document.head || document.documentElement).appendChild(script);
@@ -301,15 +354,15 @@ function addScript(src: string) {
 			if (chrome.runtime.lastError) {
 				return;
 			}
-			
+
 			try {
 				const key = String(tabId);
 				const existing = await chrome.storage.local.get(key);
-				
+
 				// Always clear scrape data on page load, preserving only the enabled state
 				const enabled = existing[key]?.enabled ?? false;
 				await chrome.storage.local.set({
-					[key]: { enabled }
+					[key]: { enabled },
 				});
 
 				document.addEventListener('snapfu-scrape', async (event) => {
@@ -317,47 +370,54 @@ function addScript(src: string) {
 					try {
 						const key = String(tabId);
 						const existing = await chrome.storage.local.get(key);
-						
+
 						// Get existing enabled state or default to false
 						const enabled = existing[key]?.enabled ?? false;
-						
+
 						// Preserve existing error if present and no version found
 						const existingError = existing[key]?.error;
-						
+
+						// Preserve the integrationUrl that was set earlier
+						const integrationUrl = existing[key]?.integrationUrl;
+
 						// Save scrape data with enabled state (and preserve error if no version)
 						await chrome.storage.local.set({
-							[key]: { 
-								...data, 
+							[key]: {
+								...data,
 								enabled,
+								// Preserve the integration URL
+								...(integrationUrl ? { integrationUrl } : {}),
 								// Keep the error if we still don't have a version
-								...(existingError && !data.version ? { 
-									error: existingError
-								} : {})
-							}
+								...(existingError && !data.version
+									? {
+											error: existingError,
+									  }
+									: {}),
+							},
 						});
 					} catch (error) {
 						// Silently catching invalidated extension context
 					}
 				});
-
+				
 				// Listen for script loading errors from loader.ts
 				document.addEventListener('snapfu-script-error', async (event) => {
 					const errorData = (event as CustomEvent).detail;
 					try {
 						const key = String(tabId);
 						const existing = await chrome.storage.local.get(key);
-						
+
 						// Get existing enabled state or default to false
 						const enabled = existing[key]?.enabled ?? false;
-						
+
 						// Save error information with enabled state
 						await chrome.storage.local.set({
-							[key]: { 
+							[key]: {
 								...existing[key],
 								enabled,
 								error: errorData.error,
-								timestamp: errorData.timestamp
-							}
+								timestamp: errorData.timestamp,
+							},
 						});
 					} catch (error) {
 						// Silently catching invalidated extension context
@@ -374,23 +434,23 @@ function addScript(src: string) {
 	try {
 		const loaderUrl = chrome.runtime.getURL('/js/loader.js');
 		const scraperUrl = chrome.runtime.getURL('/js/scraper.js');
-		
+
 		// Get the enabled state for this tab
 		chrome.runtime.sendMessage({ text: 'getTabEnabled' }, (response) => {
 			if (chrome.runtime.lastError || !response) {
 				return;
 			}
 			const enabled = response.enabled || false;
-			
+
 			// If enabled, remove CSP meta tags and set up observer
 			if (enabled) {
 				removeCSPMetaTags();
 				observeCSPMetaTags();
 			}
-			
+
 			injectCode(loaderUrl, enabled);
 		});
-		
+
 		addScript(scraperUrl);
 	} catch (error) {
 		// Silently catching invalidated extension context
