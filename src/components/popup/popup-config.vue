@@ -289,7 +289,7 @@ function reloadTab() {
 
 .page-config {
 	position: relative;
-	background: #fff;
+	background: #f8f9fb;
 	padding: 10px;
 
 	&.loading {
@@ -302,14 +302,15 @@ function reloadTab() {
 		margin-top: 5px;
 
 		&:not(:first-child) {
-			margin-top: 20px;
+			margin-top: 15px;
 		}
 
 		h3 {
-			margin: 0 0 5px;
+			margin: 0 0 8px;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			font-size: 14px;
 
 			.reset {
 				cursor: pointer;
@@ -328,28 +329,41 @@ function reloadTab() {
 		.description {
 			text-align: justify;
 			margin-bottom: 5px;
+			color: #5a6c7d;
+			line-height: 1.4;
 
 			h4 {
 				padding: 0;
 				margin: 0;
+				color: #2c3e50;
 			}
 		}
 
 		input[type='text'] {
 			width: 100%;
+			background: #ffffff;
+			border: 1px solid rgba(29, 73, 144, 0.15);
+			transition: all 0.2s ease;
+
+			&:focus {
+				border-color: #1d4990;
+				box-shadow: 0 0 0 3px rgba(29, 73, 144, 0.1);
+			}
 		}
 	}
 
 	.option.integration {
-		background: rgba(0, 0, 0, 0.03);
-		border: 1px solid #ddd;
-		border-radius: 4px;
+		background: linear-gradient(135deg, rgba(29, 73, 144, 0.04) 0%, rgba(29, 73, 144, 0.02) 100%);
+		border: 1px solid rgba(29, 73, 144, 0.15);
+		border-radius: 6px;
 		padding: 12px;
 		margin: 0;
+		box-shadow: 0 1px 3px rgba(29, 73, 144, 0.08);
 
 		&.skeleton {
 			border: 1px solid rgba(0, 0, 0, 0.3);
 			pointer-events: none;
+			background: linear-gradient(135deg, rgba(29, 73, 144, 0.06) 0%, rgba(29, 73, 144, 0.03) 100%);
 
 			h3 {
 				cursor: default;
@@ -486,10 +500,11 @@ function reloadTab() {
 
 	.alert {
 		padding: 12px 16px;
-		border-radius: 4px;
+		border-radius: 6px;
 		font-size: 13px;
 		font-weight: 500;
 		margin-bottom: 15px;
+		border: 1px solid;
 
 		.alert-content {
 			display: flex;
@@ -511,9 +526,8 @@ function reloadTab() {
 			align-items: center;
 			justify-content: center;
 			cursor: pointer;
-			transition: all 0.2s ease;
 			padding: 0;
-			transition: transform 0.3s ease;
+			transition: all 0.2s ease;
 
 			svg {
 				width: 14px;
@@ -525,29 +539,33 @@ function reloadTab() {
 			}
 
 			&:active {
-				transform: translateY(0);
+				transform: rotate(-180deg) scale(1.1);
 			}
 		}
 	}
 
 	.alert-information {
-		background: rgba(29, 73, 144, 0.04);
-		border: 1px solid rgba(29, 73, 144, 0.15);
-		color: rgba(29, 73, 144, 0.75);
+		background: rgba(29, 73, 144, 0.06);
+		border-color: rgba(29, 73, 144, 0.2);
+		color: #1d4990;
 
 		.refresh-button {
-			border-color: rgba(29, 73, 144, 0.3);
-			color: rgba(29, 73, 144, 0.75);
+			border-color: rgba(29, 73, 144, 0.25);
+			color: #1d4990;
+
+			&:hover {
+				border-color: #1d4990;
+			}
 		}
 	}
 
 	.alert-warning {
-		background: rgb(225 31 31 / 12%);
-		border: 1px solid rgb(225 31 31 / 20%);
-		color: rgb(225 31 31 / 85%);
+		background: rgba(242, 100, 124, 0.08);
+		border-color: rgba(242, 100, 124, 0.25);
+		color: #d4556a;
 
 		a {
-			color: rgb(225 31 31 / 85%);
+			color: #d4556a;
 		}
 
 		.error-url {
@@ -555,18 +573,26 @@ function reloadTab() {
 
 			a {
 				font-size: 10px;
-				color: rgb(225 31 31 / 85%);
+				color: #d4556a;
 				text-decoration: underline;
 			}
 		}
 
 		.refresh-button {
-			border-color: rgb(225 31 31 / 30%);
-			color: rgb(225 31 31 / 85%);
+			border-color: rgba(242, 100, 124, 0.3);
+			color: #d4556a;
+
+			&:hover {
+				border-color: #f2647c;
+			}
 		}
 	}
 
 	.option.url {
+		padding: 12px;
+		border-radius: 6px;
+		border: 1px solid rgba(29, 73, 144, 0.1);
+
 		h3 {
 			.heading-with-buttons {
 				display: flex;
@@ -583,6 +609,7 @@ function reloadTab() {
 
 		button {
 			margin-left: 0;
+			border-radius: 4px;
 			font-size: 9px;
 			padding: 3px 8px;
 			font-weight: 600;
@@ -612,7 +639,17 @@ function reloadTab() {
 					box-shadow: 0 2px 4px rgba(106, 176, 76, 0.3);
 				}
 			}
+			
+			&:active {
+				transform: translateY(0);
+			}
 		}
+	}
+
+	.option.context {
+		padding: 12px;
+		border-radius: 6px;
+		border: 1px solid rgba(29, 73, 144, 0.1);
 	}
 
 	.textarea-tabbed {
@@ -625,6 +662,14 @@ function reloadTab() {
 
 			textarea {
 				border-bottom-right-radius: 0;
+				background: #ffffff;
+				border: 1px solid rgba(29, 73, 144, 0.15);
+				transition: all 0.2s ease;
+
+				&:focus {
+					border-color: #1d4990;
+					box-shadow: 0 0 0 3px rgba(29, 73, 144, 0.1);
+				}
 			}
 
 			.textarea-tab {

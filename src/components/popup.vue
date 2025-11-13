@@ -22,24 +22,22 @@
 				:enabled="state.enabled"
 				@reset="reset"
 				@set="set"
-				@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
-				@toggleIntegrationCollapsed="toggleIntegrationCollapsed"
-				@reloadTab="reloadCurrentTab"
-			/>
-			<transition name="blinds">
-				<PopupSettings
-					v-if="state?.settings.show"
-					:version="props.version"
-					:currentHostname="state.currentHostname"
-					:hostnameConfig="state.hostnameConfig"
-					:savedHostnameConfig="state.savedHostnameConfig"
-					@reset="reset"
-					@resetAppConfig="resetAppConfig"
-					@clearAllStorage="clearAllStorage"
-					@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
-					ref="settingsRef"
-				/>
-			</transition>
+			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+			@toggleIntegrationCollapsed="toggleIntegrationCollapsed"
+			@reloadTab="reloadCurrentTab"
+		/>
+		<PopupSettings
+			v-show="state?.settings.show"
+			:version="props.version"
+			:currentHostname="state.currentHostname"
+			:hostnameConfig="state.hostnameConfig"
+			:savedHostnameConfig="state.savedHostnameConfig"
+			@reset="reset"
+			@resetAppConfig="resetAppConfig"
+			@clearAllStorage="clearAllStorage"
+			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+			ref="settingsRef"
+		/>
 		</div>
 	</div>
 </template>
@@ -425,9 +423,21 @@ async function clearAllStorage() {
 </script>
 
 <style lang="scss">
+html,
 body {
 	margin: 0;
 	padding: 0;
+	overflow: hidden;
+	width: fit-content;
+	height: fit-content;
+	max-height: 600px;
+	overscroll-behavior: none;
+}
+
+#app {
+	width: fit-content;
+	height: fit-content;
+	max-height: 600px;
 }
 
 .snapfu {
@@ -438,7 +448,14 @@ body {
 	margin: 0;
 	padding: 0;
 	min-width: 420px;
+	width: fit-content;
+	height: fit-content;
+	max-height: 600px;
 	border: 1px solid #1D4990;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 
 	a {
 		color: #00AEEF;
@@ -448,11 +465,20 @@ body {
 		cursor: pointer;
 		background: #1D4990;
 		color: #fff;
-		border-radius: 5px;
+		border-radius: 4px;
 		border: none;
-		padding: 5px;
+		padding: 5px 10px;
 		font-size: 10px;
-		font-weight: bold;
+		font-weight: 600;
+		transition: all 0.2s ease;
+		
+		&:hover {
+			transform: translateY(-1px);
+		}
+		
+		&:active {
+			transform: translateY(0);
+		}
 	}
 
 	textarea {
@@ -481,90 +507,28 @@ body {
 
 	.content-container {
 		position: relative;
-		overflow: hidden;
-		display: grid;
-		grid-template-columns: 1fr;
-		// Default height transition (for closing)
-		transition: height 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+		overflow-y: auto;
+		overflow-x: hidden;
+		flex: 1;
+		min-height: 0;
 		
-		// Both children occupy the same grid cell
 		.page-config-wrapper,
 		.page-settings {
-			grid-row: 1;
-			grid-column: 1;
 			width: 100%;
 			box-sizing: border-box;
 		}
 		
-		// Default state: config determines height, settings is positioned absolutely
-		.page-config-wrapper {
-			opacity: 1;
-			z-index: 1;
-			position: relative;
+		&.settings-active {
+			.page-config-wrapper {
+				display: none !important;
+			}
 		}
 		
-		.page-settings {
-			z-index: 10;
-		}
-		
-		// When settings is NOT active, position settings absolutely so it doesn't affect height
 		&:not(.settings-active) {
 			.page-settings {
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-			}
-			
-			.page-config-wrapper {
-				transition: opacity 0.3s ease;
+				display: none !important;
 			}
 		}
-		
-		// When settings IS active, position config absolutely so settings determines height
-		&.settings-active {
-			// Slower height transition when opening
-			transition: height 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-			
-			.page-config-wrapper {
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				opacity: 0;
-				transition: opacity 0.2s ease 0.4s;
-			}
-			
-			.page-settings {
-				position: relative;
-			}
-		}
-	}
-
-	// Blinds transition for settings panel
-	.blinds-enter-active,
-	.blinds-leave-active {
-		transition: transform 0.1s cubic-bezier(0.3, 0.0, 0.6, 1), opacity 0.1s ease 0.05s;
-	}
-
-	.blinds-enter-from {
-		transform: translateY(-100%);
-		opacity: 0;
-	}
-
-	.blinds-enter-to {
-		transform: translateY(0);
-		opacity: 1;
-	}
-
-	.blinds-leave-from {
-		transform: translateY(0);
-		opacity: 1;
-	}
-
-	.blinds-leave-to {
-		transform: translateY(-100%);
-		opacity: 0;
 	}
 }
 </style>

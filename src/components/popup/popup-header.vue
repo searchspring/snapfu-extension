@@ -80,28 +80,19 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 	justify-content: space-between;
 	align-items: center;
 	padding: 10px 5px;
+	height: 30px;
+	flex-shrink: 0;
 	overflow: hidden;
+	border-bottom: 1px solid #f2647cbd;
+	transition: background 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
 	
 	// Base gradient (pink) - always visible
 	background: linear-gradient(45deg, #1d4990 0%, #f2647c 100%);
 	
-	// Green gradient overlay that fades in/out
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: linear-gradient(45deg, #1d4990 0%, #5ed1b3 100%);
-		opacity: 0;
-		transition: opacity 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
-		pointer-events: none;
-		z-index: 0;
-	}
 	
-	&.settings-open::before {
-		opacity: 1;
+	&.settings-open {
+		background: linear-gradient(45deg, #1d4990 0%, #5ed1b3 100%);
+		border-bottom-color: rgba(94, 209, 179, 0.3);
 	}
 	
 	// Ensure all child elements are above the gradient layers
@@ -111,16 +102,16 @@ watch(() => props.integrationLoading, (newVal, oldVal) => {
 	}
 
 	.logo-container {
-		margin-left: 10px;
+		margin-left: 5px;
 		margin-right: 47px;
-		height: 33px;
+		height: 30px;
 		display: flex;
 		align-items: center;
 	}
 	
 	.logo-bricks {
-		width: 33px;
-		height: 33px;
+		width: 30px;
+		height: 30px;
 		flex-shrink: 0;
 		
 		.brick {

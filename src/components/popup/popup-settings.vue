@@ -233,35 +233,39 @@ defineExpose({
 <style lang="scss" scoped>
 .page-settings {
 	padding: 10px;
-	background: #1a1a2e;
-	color: #e0e0e0;
+	background: linear-gradient(135deg, #2a3d52 0%, #1f2d3d 100%);
+	color: #e8eef3;
 	z-index: 10;
 
 	.option {
 		margin-bottom: 5px;
-		margin-top: 5px;
+		padding: 12px;
+		background: rgba(255, 255, 255, 0.03);
+		border-radius: 6px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
 
 		&:not(:first-child) {
-			margin-top: 20px;
+			margin-top: 15px;
 		}
 
 		h3 {
-			margin: 0 0 5px;
+			margin: 0 0 8px;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			color: #ffffff;
+			font-size: 14px;
 
 			.reset {
 				cursor: pointer;
-				color: #f2647c;
+				color: #e7743d;
 				height: 12px;
 				width: 12px;
 				transition: all 0.2s ease;
 				
 				&:hover {
 					transform: translateY(-1px);
-					filter: drop-shadow(0 2px 4px rgba(242, 100, 124, 0.3));
+					filter: drop-shadow(0 2px 4px rgba(231, 116, 60, 0.5));
 				}
 			}
 		}
@@ -269,11 +273,11 @@ defineExpose({
 		.description {
 			text-align: justify;
 			margin-bottom: 5px;
-			color: #b8b8b8;
+			color: #b0bcc9;
 
 			code {
-				background: #2a2a3e;
-				color: #00AEEF;
+				background: rgba(0, 174, 239, 0.15);
+				color: #5ed1b3;
 				padding: 2px 4px;
 				border-radius: 3px;
 			}
@@ -281,37 +285,39 @@ defineExpose({
 			h4 {
 				padding: 0;
 				margin: 0;
-				color: #e0e0e0;
+				color: #e8eef3;
 			}
 		}
 		
 		input[type='text'] {
 			width: 100%;
-			background: #2a2a3e;
-			color: #e0e0e0;
-			border: 1px solid #3a3a4e;
+			background: rgba(0, 0, 0, 0.2);
+			color: #e8eef3;
+			border: 1px solid rgba(255, 255, 255, 0.1);
 			
 			&::placeholder {
-				color: #666;
+				color: #6b7c8f;
 			}
 
 			&:focus {
-				border-color: #00AEEF;
+				border-color: #5ed1b3;
+				background: rgba(0, 0, 0, 0.25);
 				outline: none;
 			}
 		}
 
 		textarea {
-			background: #2a2a3e;
-			color: #e0e0e0;
-			border: 1px solid #3a3a4e;
+			background: rgba(0, 0, 0, 0.2);
+			color: #e8eef3;
+			border: 1px solid rgba(255, 255, 255, 0.1);
 			
 			&::placeholder {
-				color: #666;
+				color: #6b7c8f;
 			}
 
 			&:focus {
-				border-color: #00AEEF;
+				border-color: #5ed1b3;
+				background: rgba(0, 0, 0, 0.25);
 				outline: none;
 			}
 		}
@@ -323,6 +329,9 @@ defineExpose({
 		align-items: center;
 		margin-top: 20px;
 		margin-bottom: 0;
+		background: transparent;
+		border: none;
+		padding: 8px;
 		.version {
 			font-size: 12px;
 			font-weight: bold;
@@ -334,8 +343,10 @@ defineExpose({
 			width: 14px;
 			filter: brightness(0) invert(1);
 			opacity: 0.6;
+			transition: all 0.2s ease;
 			
 			&:hover {
+				transform: scale(1.1);
 				opacity: 1;
 			}
 		}
@@ -351,16 +362,24 @@ defineExpose({
 
 	.option.reset {
 		.reset-extension {
-			background: #4a7f9e;
+			background: #1d4990;
 			color: white;
-			border: 1px solid #5a94b3;
+			border: 1px solid rgba(37, 88, 176, 0.5);
+			border-radius: 4px;
+			padding: 5px 10px;
+			font-size: 10px;
 			font-weight: 600;
 			transition: all 0.2s ease;
 			
 			&:hover {
-				background: #5a94b3;
+				background: #2558b0;
+				border-color: #4a7bc8;
 				transform: translateY(-1px);
-				box-shadow: 0 2px 4px rgba(90, 148, 179, 0.5);
+				box-shadow: 0 2px 4px rgba(74, 123, 200, 0.5);
+			}
+			
+			&:active {
+				transform: translateY(0);
 			}
 		}
 	}
@@ -375,29 +394,38 @@ defineExpose({
 		.view-storage {
 			cursor: pointer;
 			font-size: 14px;
-			color: #888;
-			transition: color 0.2s;
+			color: #6b7c8f;
+			transition: color 0.2s, transform 0.2s;
 			
 			&:hover {
-				color: #b8b8b8;
+				color: #b0bcc9;
+				transform: scale(1.1);
 			}
 			
 			&.active {
-				color: #00AEEF;
+				color: #5ed1b3;
 			}
 		}
 		
 		.clear-all-button {
-			background: #c23a2a;
+			background: #d4556a;
 			color: white;
-			border: 1px solid #e74c3c;
+			border: 1px solid rgba(242, 100, 124, 0.3);
+			border-radius: 4px;
+			padding: 5px 10px;
+			font-size: 10px;
 			font-weight: 600;
 			transition: all 0.2s ease;
 			
 			&:hover {
-				background: #e74c3c;
+				background: #f2647c;
+				border-color: #f2647c;
 				transform: translateY(-1px);
-				box-shadow: 0 2px 4px rgba(231, 76, 60, 0.5);
+				box-shadow: 0 2px 4px rgba(242, 100, 124, 0.5);
+			}
+			
+			&:active {
+				transform: translateY(0);
 			}
 		}
 		
@@ -408,12 +436,12 @@ defineExpose({
 				width: 100%;
 				font-family: 'Courier New', monospace;
 				font-size: 11px;
-				border: 1px solid #3a3a4e;
+				border: 1px solid rgba(255, 255, 255, 0.1);
 				border-radius: 4px;
 				padding: 8px;
 				resize: vertical;
-				background: #2a2a3e;
-				color: #e0e0e0;
+				background: rgba(0, 0, 0, 0.3);
+				color: #e8eef3;
 				max-height: 300px;
 				overflow-y: auto;
 			}
