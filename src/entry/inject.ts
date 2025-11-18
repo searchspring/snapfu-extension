@@ -1,6 +1,9 @@
 import { getHostnameFromUrl, getHostnameConfig, setHostnameConfig } from '../utilities/utilities';
 import { LocalData } from '../types/storage';
 
+// Selector to find Snap integration scripts (excludes chunk files, only matches bundle.js)
+const snapScriptSelector = 'script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"][src$="bundle.js"], script[src*="snapui.athoscommerce.io"][src$="bundle.js"]';
+
 /**
  * Removes CSP meta tags from the document to prevent Content Security Policy restrictions.
  * This function is called when the extension is enabled for the current tab.
@@ -64,7 +67,6 @@ function observeCSPMetaTags(): MutationObserver {
  * Returns both the CSS selector for injection target and the script element itself.
  */
 function detectScriptLocationAndElement(): { injectionTarget: string; scriptElement: HTMLScriptElement | null } {
-	const snapScriptSelector = 'script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"], script[src*="snapui.athoscommerce.io"]';
 
 	// Helper to get parent selector
 	const getParentSelector = (element: Element | null): string => {
@@ -272,7 +274,7 @@ async function injectCode(src: string, enabled: boolean) {
 		// Use the detected script if available, otherwise search again
 		let script = detectedScript;
 		if (!script) {
-			const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"], script[src*="snapui.athoscommerce.io"]'));
+			const scripts = Array.from(document.querySelectorAll(snapScriptSelector));
 			// Grab context from scripts (get the one with most content)
 			script = scripts
 				.sort((a, b) => {
@@ -287,7 +289,7 @@ async function injectCode(src: string, enabled: boolean) {
 
 		// Remove contexts if not merging
 		if (!mergeContextOption) {
-			const scripts = Array.from(document.querySelectorAll('script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"], script[src*="snapui.athoscommerce.io"]'));
+			const scripts = Array.from(document.querySelectorAll(snapScriptSelector));
 			scripts.forEach((s) => {
 				s.innerHTML = '';
 			});
