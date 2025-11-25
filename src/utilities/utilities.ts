@@ -87,6 +87,9 @@ export const getTabHostnameConfig = async (tabId: number): Promise<{ hostname: s
 		}
 	} catch (error) {
 		// Tab may have been closed - silently ignore
+		if (chrome.runtime.lastError) {
+			void chrome.runtime.lastError;
+		}
 	}
 	return { hostname: null, config: JSON.parse(JSON.stringify(defaultHostnameConfig)) };
 };

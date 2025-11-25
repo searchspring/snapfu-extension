@@ -123,6 +123,9 @@ async function updateIconForTab(tabId: number) {
 		await chrome.action.setIcon({ path: iconPaths, tabId });
 	} catch (error) {
 		// Tab may have been closed, or extension context invalidated - silently ignore
+		if (chrome.runtime.lastError) {
+			void chrome.runtime.lastError;
+		}
 		return;
 	}
 }
