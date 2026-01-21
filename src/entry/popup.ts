@@ -17,20 +17,14 @@ import {
 	faGrip,
 	faAngleUp,
 	faAngleDown,
+	faCircleInfo,
+	faChevronRight,
+	faCodeMerge,
+	faSyncAlt,
 } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faBan, faGear, faSave, faToggleOff, faUndo, faMagnifyingGlass, faList, faLocationCrosshairs, faGrip, faAngleUp, faAngleDown);
+library.add(faBan, faGear, faSave, faToggleOff, faUndo, faMagnifyingGlass, faList, faLocationCrosshairs, faGrip, faAngleUp, faAngleDown, faCircleInfo, faChevronRight, faCodeMerge, faSyncAlt);
 
 const snapp = createApp(popup, { version: packageJson.version });
 snapp.component('font-awesome-icon', FontAwesomeIcon);
 snapp.mount('#app');
-
-/*
-
-	NEXT UP:
-	* styling cleanup
-
-	* can we prevent intercepts when extension should be disabled using "click to enable"
-		+ if possible don't intercept when "disabled" 
-		+ add overlay/modal when intercepting
-*/

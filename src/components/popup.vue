@@ -1,339 +1,443 @@
 <template>
 	<div class="snapfu">
-		<div class="header">
-			<img class="logo" src="../assets/searchspring.svg" />
-			<div class="buttons">
-				<div v-if="detectChanges()" class="button save" @click="saveConfig">
-					<font-awesome-icon icon="save" />
-				</div>
+		<PopupHeader
+			:currentHostname="state.currentHostname"
+			:hasChanges="detectChanges()"
+			:enabled="state.enabled"
+			:settingsOpen="state.settings.show"
+			:integrationLoading="state.integration.loading"
+			@save="saveConfig"
+			@toggleOnOff="toggleOnOff"
+			@toggleSettings="toggleAppSettings"
+		/>
 
-				<div class="button toggle" :class="{ on: state?.config?.settings?.enabled }" @click="toggleOnOff">
-					<span v-if="state?.config?.settings?.enabled" class="on"></span>
-					<font-awesome-icon icon="toggle-off" />
-				</div>
-
-				<div class="button settings" :class="{ open: state?.settings.show }" @click="toggleAppSettings">
-					<span v-if="state?.settings.show" class="open"></span>
-					<font-awesome-icon icon="gear" />
-				</div>
-			</div>
-		</div>
-
-		<div v-if="state?.settings.show" class="page-settings">
-			<div class="option intercepts">
-				<h3>
-					Intercepts
-					<font-awesome-icon
-						v-if="detectChanges('settings.intercepts', 'default')"
-						class="reset"
-						@click="reset('settings.intercepts')"
-						icon="undo"
-						title="reset intercepts"
-					/>
-				</h3>
-				<div class="description">Intercepts are used for blocking network requests. This helps prevent multiple bundles from loading.</div>
-
-				<textarea
-					placeholder="intercepts should be here..."
-					required="true"
-					spellcheck="false"
-					v-model="state.config.settings.intercepts"
-					:rows="state.config.settings.intercepts.split('\n').length"
-				/>
-			</div>
-
-			<div class="option injection">
-				<h3>
-					Script Injection
-				</h3>
-				<div class="description">Enable script injection on any page, regardless of whether integration is present or not.</div>
-
-				<label class="injection">
-					<span>Force Injection: </span>
-					<input v-model="state.config.settings.forceInjection" type="checkbox" />
-				</label>
-			</div>
-
-			<div class="option reset" v-if="detectChanges('', 'default')">
-				<h3>
-					Restore Defaults
-					<button class="reset-extension" @click="resetAppConfig">
-						{{ state.settings.confirmReset ? 'confirm' : 'reset' }}
-					</button>
-				</h3>
-				<div class="description">Set the extension settings back to initial values.</div>
-			</div>
-
-			<div class="option footer">
-				<span class="version">v{{ props.version }}</span>
-				<a href="https://github.com/searchspring/snapfu-extension" target="_blank"><img class="github" src="../assets/github.svg" /></a>
-			</div>
-		</div>
-
-		<div v-if="!state?.settings.show && state.config?.bundle" class="page-config">
-			<div class="option integration">
-				<h3 @click="() => (state.integration.collapsed = !state.integration.collapsed)" v-if="!state.integration.loading">
-					<span
-						>Integration <span v-if="state.integration.details.version" class="snap-version">v{{ state.integration.details.version }}</span></span
-					>
-					<font-awesome-icon class="header-icon collapse-icon" :icon="state.integration.collapsed ? 'angle-down' : 'angle-up'" />
-				</h3>
-
-				<div v-if="state.integration.loading" class="loading-container">
-					<Loading />
-				</div>
-
-				<div v-if="!state.integration.loading && state.integration.details.version && !state.integration.collapsed">
-					<div class="description controllers">
-						<h4>
-							Controllers <span v-if="state.integration.details.controllers?.length">({{ state.integration.details.controllers?.length }})</span>
-						</h4>
-						<div
-							:key="key"
-							v-for="(controller, key) in state.integration.details.controllers"
-							@click="() => (controller.collapsed = !controller.collapsed)"
-							class="controller-wrapper"
-						>
-							<Controller :controller="controller" />
-						</div>
-					</div>
-				</div>
-
-				<div v-if="state.integration.loading === false && !state.integration.details.version && !state.integration.collapsed" class="description">
-					No Snap integration found.
-				</div>
-			</div>
-
-			<div v-if="state?.config?.settings?.enabled" class="option url">
-				<h3>
-					Bundle URL
-					<span>
-						<button class="url-cdn" @click="set('bundle.url', 'https://snapui.searchspring.io/siteid/branch/bundle.js')">cdn</button>
-						<button class="url-local" @click="set('bundle.url', 'https://localhost:3333/bundle.js')">local</button>
-					</span>
-				</h3>
-
-				<div class="description">URL of bundle to inject onto the page.<br /></div>
-
-				<input v-model="state.config.bundle.url" type="text" />
-			</div>
-
-			<div v-if="state?.config?.settings?.enabled" class="option context">
-				<h3>
-					Script Context
-					<font-awesome-icon
-						v-if="detectChanges('bundle.context', 'default')"
-						class="reset"
-						@click="reset('bundle.context')"
-						icon="undo"
-						title="reset context variables"
-					/>
-				</h3>
-
-				<div class="description">Contextual variables to be injected with the script.</div>
-
-				<textarea
-					placeholder="context variables should be here..."
-					required="true"
-					spellcheck="false"
-					v-model="state.config.bundle.context"
-					:rows="state.config.bundle.context.split('\n').length"
-				/>
-				<label class="context-merge">
-					<span>Merge context: </span>
-					<input v-model="state.config.bundle.mergeContext" type="checkbox" />
-				</label>
-			</div>
+		<div class="content-container" :class="{ 'settings-active': state.settings.show }">
+			<PopupConfig
+				:currentHostname="state.currentHostname"
+				:hostnameConfig="state.hostnameConfig"
+				:savedHostnameConfig="state.savedHostnameConfig"
+				:integrationDetails="state.integration.details"
+				:integrationLoading="state.integration.loading"
+				:integrationCollapsed="state.hostnameConfig.integrationCollapsed"
+				:enabled="state.enabled"
+				@reset="reset"
+				@set="set"
+			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+			@toggleIntegrationCollapsed="toggleIntegrationCollapsed"
+			@reloadTab="reloadCurrentTab"
+		/>
+		<PopupSettings
+			v-show="state?.settings.show"
+			:version="props.version"
+			:currentHostname="state.currentHostname"
+			:hostnameConfig="state.hostnameConfig"
+			:savedHostnameConfig="state.savedHostnameConfig"
+			@reset="reset"
+			@resetAppConfig="resetAppConfig"
+			@clearAllStorage="clearAllStorage"
+			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+			ref="settingsRef"
+		/>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, defineProps } from 'vue';
-import { StoredData, LocalData } from '../types/storage';
-import Controller from './controller.vue';
-import Loading from './loading.vue';
+import { reactive, onMounted, defineProps, ref } from 'vue';
+import { StoredData, HostnameConfig, LocalData, HostnameConfigValue, ControllerInfo } from '../types/storage';
+import PopupHeader from './popup/popup-header.vue';
+import PopupSettings from './popup/popup-settings.vue';
+import PopupConfig from './popup/popup-config.vue';
 
-import { defaultConfig, getConfig, setConfig, resetConfig, deepCompare, getCurrentTabId } from '../utilities/utilities';
+import { 
+	defaultHostnameConfig, 
+	getConfig, 
+	setConfig, 
+	deepCompare, 
+	getHostnameConfig,
+	setHostnameConfig,
+	getTabEnabled,
+	setTabEnabled,
+	safeReloadTab
+} from '../utilities/utilities';
 
-const props = defineProps({
-	version: String,
-});
+const props = defineProps<{
+	version: string;
+}>();
+
+let ignoringStorageUpdates = false;
+
+const settingsRef = ref<InstanceType<typeof PopupSettings> | null>(null);
 
 const state = reactive({
 	settings: {
 		show: false,
-		confirmReset: false,
 	},
 	integration: {
 		details: {} as LocalData,
 		loading: true,
-		collapsed: false,
 	},
 	config: {} as StoredData,
 	savedConfig: {} as StoredData,
+	hostnameConfig: JSON.parse(JSON.stringify(defaultHostnameConfig)) as HostnameConfig,
+	savedHostnameConfig: JSON.parse(JSON.stringify(defaultHostnameConfig)) as HostnameConfig,
+	currentHostname: null as string | null,
+	currentTabId: null as number | null,
+	enabled: null as boolean | null, // Per-tab enabled state - null until loaded
 });
 
 onMounted(async () => {
+	// Get tab info once and derive everything from it
+	let tab;
+	try {
+		[tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+	} catch {
+		// Can't get tab info
+		return;
+	}
+	
+	const tabId = tab.id || null;
+	const url = tab.url || '';
+	const isHttpUrl = url.startsWith('http://') || url.startsWith('https://');
+	
+	// Extract hostname from URL directly instead of using getCurrentHostname
+	let hostname: string | null = null;
+	try {
+		const urlObj = new URL(url);
+		hostname = urlObj.hostname;
+	} catch {
+		// Invalid URL
+	}
+	
+	const validHostname = isHttpUrl ? hostname : null;
+	state.currentHostname = validHostname;
+	state.currentTabId = tabId;
+	
+	// Fetch data sequentially (parallel loading causes rendering issues)
 	const config = await getConfig();
 	state.config = config;
 	state.savedConfig = JSON.parse(JSON.stringify(config));
-
-	// get currentTabId
-	const tabId = await getCurrentTabId();
-
-	try {
-		const storedLocalData = await chrome.storage.local.get();
-		if (tabId) {
-			state.integration.details = storedLocalData[tabId];
-			if (state.integration.details?.timestamp) {
-				state.integration.loading = false;
-			}
+	
+	// Get hostname config
+	const hostnameConfig = validHostname 
+		? await getHostnameConfig(validHostname) 
+		: JSON.parse(JSON.stringify(defaultHostnameConfig));
+	state.hostnameConfig = hostnameConfig;
+	state.savedHostnameConfig = JSON.parse(JSON.stringify(hostnameConfig));
+	
+	// Get enabled state
+	const enabled = tabId ? await getTabEnabled(tabId) : false;
+	state.enabled = enabled;
+	
+	// Set integration details if available
+	if (tabId) {
+		const localData = await chrome.storage.local.get(String(tabId));
+		const existingData = (localData as any)[tabId];
+		if (existingData?.timestamp) {
+			// We have existing data, use it and don't show loading
+			state.integration.details = existingData;
+			state.integration.loading = false;
+		} else {
+			// No existing data - show loading only for http/https URLs
+			state.integration.loading = isHttpUrl;
 		}
-	} catch (error) {
-		state.integration.loading = false;
 	}
 
-	// add onChange storage listener
+	// Add onChange storage listener
 	try {
-		chrome.storage.onChanged.addListener(async (changes, area) => {
+		chrome.storage.onChanged.addListener(async (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+			if (ignoringStorageUpdates) return; // Skip updates during toggle operation
+			
 			if (tabId && area === 'local') {
 				try {
 					const storedLocalData = await chrome.storage.local.get();
-					state.integration.details = storedLocalData[tabId];
-					if (state.integration.details?.timestamp) {
-						state.integration.loading = false;
-					} else {
-						state.integration.loading = true;
-						state.integration.details = {};
+					const newData = storedLocalData[tabId];
+					
+					// Update enabled state if it changed
+					if (changes[tabId]?.newValue?.enabled !== undefined) {
+						state.enabled = changes[tabId].newValue.enabled;
+					}
+					
+					// Whenever we get data with a timestamp, exit loading state
+					// This includes: successful integration found, error occurred, or "not found" after timeout
+					if (newData?.timestamp) {
+						// Preserve collapsed state of controllers and config sections
+						if (state.integration.details?.controllers && newData.controllers) {
+							newData.controllers.forEach((newController: ControllerInfo, index: number) => {
+								const existingController = state.integration.details.controllers?.[index];
+								if (existingController && existingController.id === newController.id) {
+									newController.collapsed = existingController.collapsed;
+									
+									// Preserve config collapsed states
+									if (existingController.config?.globals && newController.config?.globals) {
+										newController.config.globals.collapsed = existingController.config.globals.collapsed;
+									}
+									if (existingController.config?.settings && newController.config?.settings) {
+										newController.config.settings.collapsed = existingController.config.settings.collapsed;
+									}
+								}
+							});
+						}
+						state.integration.details = newData;
+						state.integration.loading = false; // Always exit loading when we get a result
 					}
 				} catch (error) {
-					// silently catching invalidated extension context
+					// Silently catching invalidated extension context
 				}
 			}
 		});
 	} catch (error) {
-		// silently catching invalidated extension context
+		// Silently catching invalidated extension context
 	}
 });
 
-function saveConfig() {
+async function saveConfig() {
+	// Check if bundle URL, context, merge context, or injection target changed
+	const bundleUrlChanged = state.hostnameConfig.bundle.url !== state.savedHostnameConfig.bundle.url;
+	const contextChanged = state.hostnameConfig.bundle.context !== state.savedHostnameConfig.bundle.context;
+	const mergeContextChanged = state.hostnameConfig.bundle.mergeContext !== state.savedHostnameConfig.bundle.mergeContext;
+	const injectionTargetChanged = state.hostnameConfig.bundle.injectionTarget !== state.savedHostnameConfig.bundle.injectionTarget;
+	
+	// Check if intercepts changed (requires reload to update declarativeNetRequest rules)
+	const interceptsChanged = state.hostnameConfig.intercepts !== state.savedHostnameConfig.intercepts;
+	
+	const needsReload = (bundleUrlChanged || contextChanged || mergeContextChanged || injectionTargetChanged || interceptsChanged) 
+		&& state.enabled && state.currentTabId;
+	
+	// Prepare for reload before saving changes
+	if (needsReload) {
+		await prepareForReload();
+	}
+	
+	// Save global config (which now just stores hostname configs)
 	setConfig(state.config);
 	state.savedConfig = JSON.parse(JSON.stringify(state.config));
+	
+	// Save hostname config
+	if (state.currentHostname) {
+		setHostnameConfig(state.currentHostname, state.hostnameConfig);
+		state.savedHostnameConfig = JSON.parse(JSON.stringify(state.hostnameConfig));
+	}
+	
+	// Reload page if bundle settings or intercepts changed and extension is enabled
+	if (needsReload && state.currentTabId) {
+		await safeReloadTab(state.currentTabId);
+	}
 }
 
-function detectChanges(configPath = '', location = 'saved') {
-	const paths = configPath.split('.');
-	const configLocation = location == 'saved' ? state.savedConfig : defaultConfig;
-
-	const savedValue = configPath
-		? paths.reduce((configuration: any, path: string) => {
-				if (typeof configuration[path as keyof StoredData] !== 'undefined') {
-					return configuration[path as keyof StoredData];
-				}
-		  }, configLocation)
-		: configLocation;
-
-	const value = configPath
-		? paths.reduce((configuration: any, path: string) => {
-				if (typeof configuration[path as keyof StoredData] !== 'undefined') {
-					return configuration[path as keyof StoredData];
-				}
-		  }, state.config)
-		: state.config;
-
-	if (typeof savedValue != 'undefined') {
-		// determine if something changed
-		try {
-			// clones config to avoid mutation
-			const savedValueClone = JSON.parse(JSON.stringify(savedValue));
-			const valueClone = JSON.parse(JSON.stringify(value || {}));
-
-			if (!configPath) {
-				// ignore on/off state
-				delete savedValueClone.settings.enabled;
-				delete valueClone.settings.enabled;
-			}
-
-			return !deepCompare(savedValueClone, valueClone);
-		} catch (e) {
-			// initial state
-			return false;
-		}
+function detectChanges() {
+	try {
+		const savedClone = JSON.parse(JSON.stringify(state.savedHostnameConfig));
+		const currentClone = JSON.parse(JSON.stringify(state.hostnameConfig));
+		return !deepCompare(savedClone, currentClone);
+	} catch (e) {
+		return false;
 	}
-
-	return false;
 }
 
 function reset(configPath: string, location = 'default') {
-	const paths = configPath.split('.');
-	const configLocation = location == 'saved' ? state.savedConfig : defaultConfig;
+	const paths = configPath.split('.').filter(p => p);
+	const configLocation = location == 'saved' ? state.savedHostnameConfig : defaultHostnameConfig;
 
-	const savedValue = paths.reduce((configuration: any, path: string) => {
-		if (configuration[path as keyof StoredData]) {
-			return configuration[path as keyof StoredData];
+	const savedValue: HostnameConfigValue | undefined = paths.reduce<HostnameConfigValue | undefined>((configuration, path: string) => {
+		if (configuration && typeof configuration === 'object' && configuration !== null && path in configuration) {
+			return (configuration as Record<string, HostnameConfigValue>)[path];
 		}
+		return undefined;
 	}, configLocation);
 
 	if (typeof savedValue != 'undefined') {
-		paths.reduce((configuration: any, path: string, index) => {
-			if (index == paths.length - 1) {
-				configuration[path as keyof StoredData] = JSON.parse(JSON.stringify(savedValue));
-			} else {
-				return configuration[path as keyof StoredData];
+		paths.reduce<HostnameConfigValue | undefined>((configuration, path: string, index) => {
+			if (configuration && typeof configuration === 'object' && configuration !== null) {
+				const config = configuration as Record<string, HostnameConfigValue>;
+				if (index == paths.length - 1) {
+					config[path] = JSON.parse(JSON.stringify(savedValue));
+				} else {
+					return config[path];
+				}
 			}
-		}, state.config);
+			return configuration;
+		}, state.hostnameConfig);
 	}
 }
 
-function set(configPath: string, value: any) {
-	const paths = configPath.split('.');
+function set(configPath: string, value: HostnameConfigValue | undefined) {
+	const paths = configPath.split('.').filter(p => p);
 
-	paths.reduce((configuration: any, path: string, index) => {
-		if (index == paths.length - 1) {
-			configuration[path as keyof StoredData] = JSON.parse(JSON.stringify(value));
-		} else {
-			return configuration[path as keyof StoredData];
+	paths.reduce<HostnameConfigValue | undefined>((configuration, path: string, index) => {
+		if (configuration && typeof configuration === 'object' && configuration !== null) {
+			const config = configuration as Record<string, HostnameConfigValue>;
+			if (index == paths.length - 1) {
+				config[path] = JSON.parse(JSON.stringify(value));
+			} else {
+				return config[path];
+			}
 		}
-	}, state.config);
+		return configuration;
+	}, state.hostnameConfig);
 }
 
-function toggleOnOff() {
-	const currentStatus = state.config.settings.enabled;
-	state.config = JSON.parse(JSON.stringify(state.savedConfig));
-	state.config.settings.enabled = !currentStatus;
-	saveConfig();
+/**
+ * Prepares the popup state for a page reload by entering loading state
+ * and preventing storage update interference. Call this before reloading
+ * the tab when extension settings change.
+ */
+async function prepareForReload() {
+	// Ignore storage updates during reload to prevent interference
+	ignoringStorageUpdates = true;
 	
-	// show loading indicator when toggling
-	state.integration.loading = true;
+	// Clear existing data and enter loading state
 	state.integration.details = {};
+	state.integration.loading = true;
+	
+	// Re-enable storage updates after reload completes
+	// Use a timeout to allow the page to start reloading
+	setTimeout(() => {
+		ignoringStorageUpdates = false;
+	}, 500);
+}
+
+async function toggleOnOff() {
+	if (!state.currentTabId || !state.currentHostname) return;
+	if (state.enabled === null) return; // Not loaded yet
+	
+	const newEnabled = !state.enabled;
+	
+	// Close settings if open
+	if (state.settings.show) {
+		state.settings.show = false;
+		if (settingsRef.value) {
+			settingsRef.value.resetConfirmations();
+		}
+	}
+	
+	// Prepare for reload
+	await prepareForReload();
+	
+	// Update enabled state
+	state.enabled = newEnabled;
+	await setTabEnabled(state.currentTabId, newEnabled);
+	
+	// When enabling, ensure hostname config exists
+	if (newEnabled) {
+		await setHostnameConfig(state.currentHostname, state.hostnameConfig);
+		state.savedHostnameConfig = JSON.parse(JSON.stringify(state.hostnameConfig));
+		
+		// Wait for storage changes to propagate and intercepts to be updated
+		await new Promise(resolve => setTimeout(resolve, 100));
+	}
+	
+	// Reload the page
+	if (state.currentTabId) {
+		await safeReloadTab(state.currentTabId);
+	}
 }
 
 function toggleAppSettings() {
 	state.settings.show = !state.settings.show;
-	if (!state.settings.show) {
-		state.settings.confirmReset = false;
+	if (!state.settings.show && settingsRef.value) {
+		settingsRef.value.resetConfirmations();
+	}
+}
+
+async function toggleIntegrationCollapsed() {
+	// Toggle the collapsed state
+	state.hostnameConfig.integrationCollapsed = !state.hostnameConfig.integrationCollapsed;
+	
+	// Update saved state immediately to prevent flash of unsaved changes indicator
+	state.savedHostnameConfig.integrationCollapsed = state.hostnameConfig.integrationCollapsed;
+	
+	// Auto-save this preference without triggering a reload
+	if (state.currentHostname) {
+		await setHostnameConfig(state.currentHostname, state.hostnameConfig);
+	}
+}
+
+async function reloadCurrentTab() {
+	if (state.currentTabId) {
+		await prepareForReload();
+		await safeReloadTab(state.currentTabId);
 	}
 }
 
 async function resetAppConfig() {
-	if (!state.settings.confirmReset) {
-		state.settings.confirmReset = true;
-	} else {
-		resetConfig();
+	// Prepare for reload before making changes
+	if (state.enabled && state.currentTabId) {
+		await prepareForReload();
+	}
+	
+	// Reset the current hostname's config to defaults
+	if (state.currentHostname) {
+		state.hostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
+		state.savedHostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
+		setHostnameConfig(state.currentHostname, state.hostnameConfig);
+	}
+	
+	// Reload the current tab to apply changes (only if extension is enabled)
+	if (state.enabled && state.currentTabId) {
+		await safeReloadTab(state.currentTabId);
+	}
+}
 
-		// reload state
-		state.config = await getConfig();
-		state.savedConfig = JSON.parse(JSON.stringify(state.config));
-		state.settings.confirmReset = false;
+async function clearAllStorage() {
+	try {
+		// Only prepare for reload if we have a valid tab with hostname
+		if (state.currentTabId && state.currentHostname) {
+			await prepareForReload();
+		}
+		
+		// Clear all sync storage (hostname configs)
+		await chrome.storage.sync.clear();
+		
+		// Clear all local storage (per-tab enabled states and integration details)
+		await chrome.storage.local.clear();
+		
+		// Clear all session rules (intercepts and CSP rules)
+		const sessionRules = await chrome.declarativeNetRequest.getSessionRules();
+		const ruleIds = sessionRules.map(rule => rule.id);
+		if (ruleIds.length > 0) {
+			await chrome.declarativeNetRequest.updateSessionRules({
+				removeRuleIds: ruleIds,
+				addRules: []
+			});
+		}
+		
+		// Reset popup state to defaults
+		state.config = { hostnameConfigs: {} };
+		state.savedConfig = { hostnameConfigs: {} };
+		state.hostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
+		state.savedHostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
+		state.enabled = false;
+		state.integration.loading = false;
+		
+		state.settings.show = false;
+		
+		// Reload the current tab to apply changes (only if we have a valid hostname)
+		if (state.currentTabId && state.currentHostname) {
+			await safeReloadTab(state.currentTabId);
+		}
+	} catch (error) {
+		// Silently catching errors
 	}
 }
 </script>
 
 <style lang="scss">
+html,
 body {
 	margin: 0;
 	padding: 0;
+	overflow: hidden;
+	width: fit-content;
+	height: fit-content;
+	max-height: 600px;
+	overscroll-behavior: none;
+}
+
+#app {
+	width: fit-content;
+	height: fit-content;
+	max-height: 600px;
 }
 
 .snapfu {
@@ -344,21 +448,37 @@ body {
 	margin: 0;
 	padding: 0;
 	min-width: 420px;
-	border: 1px solid #352490;
+	width: fit-content;
+	height: fit-content;
+	max-height: 600px;
+	border: 1px solid #1D4990;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 
 	a {
-		color: #09b4d8;
+		color: #00AEEF;
 	}
 
 	button {
 		cursor: pointer;
-		background: #352490;
+		background: #1D4990;
 		color: #fff;
-		border-radius: 5px;
+		border-radius: 4px;
 		border: none;
-		padding: 5px;
+		padding: 5px 10px;
 		font-size: 10px;
-		font-weight: bold;
+		font-weight: 600;
+		transition: all 0.2s ease;
+		
+		&:hover {
+			transform: translateY(-1px);
+		}
+		
+		&:active {
+			transform: translateY(0);
+		}
 	}
 
 	textarea {
@@ -370,7 +490,7 @@ body {
 		height: auto;
 		resize: none;
 		border-radius: 3px;
-		border: 1px solid #ccc;
+		border: 1px solid #ddd;
 		box-sizing: border-box;
 		outline: none;
 	}
@@ -380,265 +500,33 @@ body {
 		font-size: 10px;
 		padding: 5px;
 		border-radius: 3px;
-		border: 1px solid #ccc;
+		border: 1px solid #ddd;
 		box-sizing: border-box;
 		outline: none;
 	}
 
-	.integration {
-		.snap-version {
-			font-weight: normal;
-		}
-
-		h3 {
-			cursor: pointer;
-		}
-
-		.header-icon.collapse-icon {
-			padding-right: 9px;
-		}
-	}
-
-	.header {
-		background: linear-gradient(90.68deg, #352490 0%, #4c3ce2 100%);
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		justify-content: space-between;
-		align-items: center;
-		padding: 10px 0;
-
-		.logo {
-			margin-left: 10px;
-			height: 33px;
-		}
-		.buttons {
-			display: flex;
-			align-items: center;
-
-			div {
-				padding: 0px 10px;
-				cursor: pointer;
-			}
-
-			.save {
-				animation: pulse-save 1.5s infinite;
-
-				svg {
-					color: #e11f82;
-					width: 27px;
-					height: 27px;
-				}
-
-				@keyframes pulse-save {
-					0% {
-						transform: scale(0.83);
-					}
-
-					50% {
-						transform: scale(1);
-					}
-
-					100% {
-						transform: scale(0.83);
-					}
-				}
-			}
-
-			.toggle {
-				position: relative;
-				&.on {
-					svg {
-						transform: rotate(180deg);
-					}
-				}
-
-				.on {
-					background: #23b5d9;
-					position: absolute;
-					left: 12px;
-					top: 7px;
-					border-radius: 10px;
-					z-index: 1;
-					width: 32px;
-					height: 22px;
-					display: block;
-				}
-
-				svg {
-					color: #fff;
-					position: relative;
-					z-index: 2;
-					width: 36px;
-					height: 36px;
-				}
-				.text {
-					padding: 10px;
-				}
-			}
-
-			.settings {
-				position: relative;
-
-				.open {
-					background: #e11f82;
-					position: absolute;
-					left: 18px;
-					top: 9px;
-					border-radius: 50%;
-					z-index: 1;
-					width: 9px;
-					height: 9px;
-					display: block;
-				}
-
-				svg {
-					color: #fff;
-					position: relative;
-					z-index: 2;
-					transition: all 0.3s ease-in-out;
-					width: 25px;
-					height: 25px;
-				}
-
-				&.open {
-					svg {
-						color: #352490;
-						transform: rotate(30deg);
-					}
-				}
-			}
-		}
-	}
-
-	.option {
-		margin-bottom: 5px;
-		margin-top: 5px;
-
-		&:not(:first-child) {
-			margin-top: 20px;
-		}
-
-		h3 {
-			margin: 0 0 5px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-
-			.reset {
-				margin-left: 10px;
-				cursor: pointer;
-				color: #e11f82;
-				height: 12px;
-				width: 12px;
-			}
-		}
-
-		.description {
-			text-align: justify;
-			margin-bottom: 10px;
-
-			h4 {
-				padding: 0;
-				margin: 0;
-			}
-		}
-
-		input[type='text'] {
-			width: 100%;
-		}
-	}
-
-	.page-settings {
-		padding: 10px;
-
-		.option.footer {
-			display: flex;
-			justify-content: flex-end;
-			align-items: center;
-			margin-top: 10px;
-			margin-bottom: 0;
-			.version {
-				font-size: 12px;
-				font-weight: bold;
-			}
-			.github {
-				margin-left: 5px;
-				height: 14px;
-				width: 14px;
-			}
-		}
-
-		.option.injection {
-			.injection {
-				display: inline-flex;
-				align-items: center;
-				cursor: pointer;
-			}
-		}
-
-		.option.reset {
-			.reset-extension {
-				background: #e11e81;
-				color: white;
-				&:hover {
-					background: #ad1763;
-				}
-			}
-		}
-	}
-
-	.page-config {
+	.content-container {
 		position: relative;
-		background: #fff;
-		padding: 10px;
-
-		&.disabled {
-			filter: blur(1.5px);
-			pointer-events: none;
-			z-index: 1;
+		overflow-y: auto;
+		overflow-x: hidden;
+		flex: 1;
+		min-height: 0;
+		
+		.page-config-wrapper,
+		.page-settings {
+			width: 100%;
+			box-sizing: border-box;
 		}
-
-		.overlay {
-			background: #d4cfff;
-			opacity: 0.5;
-			position: absolute;
-			left: 0;
-			right: 0;
-			top: 0;
-			bottom: 0;
-			display: flex;
-			justify-content: space-evenly;
-			align-items: center;
-			z-index: 3;
-
-			svg {
-				display: none;
-				transform: rotate(90deg);
-				color: #e11f82;
-				opacity: 0.2;
-				height: 120px;
-				width: 120px;
+		
+		&.settings-active {
+			.page-config-wrapper {
+				display: none !important;
 			}
 		}
-
-		.option.url {
-			button {
-				margin-left: 5px;
-				&.url-cdn {
-					background-color: #d84c31;
-				}
-				&.url-local {
-					background-color: #1d6ca1;
-				}
-			}
-		}
-
-		.option.context {
-			.context-merge {
-				display: inline-flex;
-				align-items: center;
-				cursor: pointer;
+		
+		&:not(.settings-active) {
+			.page-settings {
+				display: none !important;
 			}
 		}
 	}
