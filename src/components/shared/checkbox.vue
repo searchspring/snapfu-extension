@@ -100,7 +100,7 @@ function handleChange(event: Event) {
 		}
 
 		&:focus + .checkbox-custom {
-			outline: none;;
+			outline: none;
 		}
 
 		&:hover:not(:disabled) + .checkbox-custom {
