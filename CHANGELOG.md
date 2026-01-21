@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/searchspring/snapfu-extension/compare/v1.5.0...v1.6.0) (2026-01-21)
+
+
+### Features
+
+* **extension:** athos rebuild with improved capabilities (per tab and hostname configuration) ([f482d59](https://github.com/searchspring/snapfu-extension/commit/f482d593d0c6fbf7e15f6300af3e230dd46c6752))
+* **extension:** athosified further and made minor improvements to look and feel ([adde295](https://github.com/searchspring/snapfu-extension/commit/adde295ea651c7439fb23a9c577f297f032b4c66))
+* **extension:** switching to using individual tab iterception and enabled state ([bb34db9](https://github.com/searchspring/snapfu-extension/commit/bb34db9028087c38fe0c1b11873f56655c3231f1))
+
+
+### Bug Fixes
+
+* **extension:** added meta tag CSP support and did some small styling adjustments ([e631338](https://github.com/searchspring/snapfu-extension/commit/e6313386ce2a6f9b487b8b5ee8721713192278e1))
+* **extension:** ensure that we are grabbing the root bundle script not a chunk file ([758c564](https://github.com/searchspring/snapfu-extension/commit/758c56485e03c73215b34cead43e73228e273fce))
+* **extension:** prevent errors regarding attempts to access tabs that no longer exist ([3fcfb43](https://github.com/searchspring/snapfu-extension/commit/3fcfb43b04d4a65a9772b945b806ea76bda53244))
+
 ## [1.5.0](https://github.com/searchspring/snapfu-extension/compare/v1.4.10...v1.5.0) (2025-11-06)
 
 

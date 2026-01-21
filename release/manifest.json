@@ -1,19 +1,23 @@
 {
 	"manifest_version": 3,
 	"name": "Snapfu Extension",
-	"description": "Extension used for injecting Snap bundles onto pages for testing purposes.",
-	"version": "1.5.0",
+	"description": "Extension used for injecting Athos Commerce Snap bundles onto pages for testing purposes.",
+	"version": "1.6.0",
 	"permissions": ["storage", "webRequest", "declarativeNetRequestWithHostAccess", "activeTab", "tabs"],
 	"host_permissions": ["<all_urls>"],
 	"background": {
 		"service_worker": "/js/background.js"
 	},
 	"action": {
-		"default_popup": "popup.html"
+		"default_popup": "popup.html",
+		"default_icon": {
+			"48": "./assets/icons/athos-icon-48.png",
+			"128": "./assets/icons/athos-icon-128.png"
+		}
 	},
 	"icons": {
-		"48": "./assets/icons/snapfu48.png",
-		"128": "./assets/icons/snapfu128.png"
+		"48": "./assets/icons/athos-icon-48.png",
+		"128": "./assets/icons/athos-icon-128.png"
 	},
 	"content_scripts": [
 		{
