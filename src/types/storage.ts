@@ -18,6 +18,7 @@ export type StoredData = {
 	hostnameConfigs: {
 		[hostname: string]: HostnameConfig;
 	};
+	autoEnable?: boolean; // Global: auto-enables new tabs for any configured hostname
 };
 
 export type ControllerInfo = {

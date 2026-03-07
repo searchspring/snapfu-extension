@@ -2,7 +2,8 @@ import { getHostnameFromUrl, getHostnameConfig, setHostnameConfig } from '../uti
 import { LocalData } from '../types/storage';
 
 // Selector to find Snap integration scripts (excludes chunk files, only matches bundle.js)
-const snapScriptSelector = 'script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"][src$="bundle.js"], script[src*="snapui.athoscommerce.io"][src$="bundle.js"]';
+const snapScriptSelector =
+	'script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"][src$="bundle.js"], script[src*="snapui.athoscommerce.io"][src$="bundle.js"]';
 
 /**
  * Removes CSP meta tags from the document to prevent Content Security Policy restrictions.
@@ -67,7 +68,6 @@ function observeCSPMetaTags(): MutationObserver {
  * Returns both the CSS selector for injection target and the script element itself.
  */
 function detectScriptLocationAndElement(): { injectionTarget: string; scriptElement: HTMLScriptElement | null } {
-
 	// Helper to get parent selector
 	const getParentSelector = (element: Element | null): string => {
 		if (!element || !element.parentElement) {
@@ -232,7 +232,7 @@ async function injectCode(src: string, enabled: boolean) {
 			const existing = await chrome.storage.local.get(key);
 
 			// If enabled, use the configured URL; otherwise use the original URL from the page
-			
+
 			// Create full URL for originalBundleUrl if it's relative
 			const fullOriginalBundleUrl = new URL(originalBundleUrl, window.location.origin).href;
 
@@ -366,7 +366,7 @@ function addScript(src: string) {
 				// navigating to a new domain should behave as if a new tab were opened.
 				const currentHostname = getHostnameFromUrl(window.location.href);
 				const storedHostname = existing[key]?.hostname;
-				const enabled = (storedHostname === currentHostname) ? (existing[key]?.enabled ?? false) : false;
+				const enabled = storedHostname === currentHostname ? existing[key]?.enabled ?? false : false;
 				await chrome.storage.local.set({
 					[key]: { enabled, hostname: currentHostname },
 				});
@@ -386,11 +386,16 @@ function addScript(src: string) {
 						// Preserve the integrationUrl that was set earlier
 						const integrationUrl = existing[key]?.integrationUrl;
 
+						// Preserve the hostname so sticky-enable checks remain valid
+						const hostname = existing[key]?.hostname;
+
 						// Save scrape data with enabled state (and preserve error if no version)
 						await chrome.storage.local.set({
 							[key]: {
 								...data,
 								enabled,
+								// Preserve the hostname
+								...(hostname ? { hostname } : {}),
 								// Preserve the integration URL
 								...(integrationUrl ? { integrationUrl } : {}),
 								// Keep the error if we still don't have a version
@@ -405,7 +410,7 @@ function addScript(src: string) {
 						// Silently catching invalidated extension context
 					}
 				});
-				
+
 				// Listen for script loading errors from loader.ts
 				document.addEventListener('snapfu-script-error', async (event) => {
 					const errorData = (event as CustomEvent).detail;
@@ -429,6 +434,15 @@ function addScript(src: string) {
 						// Silently catching invalidated extension context
 					}
 				});
+
+				// Use the hostname-checked enabled state to inject — avoids a race where a
+				// separate getTabEnabled message reads stale storage (enabled=true from the
+				// previous hostname) before the mismatch reset above has been written.
+				if (enabled) {
+					removeCSPMetaTags();
+					observeCSPMetaTags();
+				}
+				injectCode(chrome.runtime.getURL('/js/loader.js'), enabled);
 			} catch (error) {
 				// Silently catching invalidated extension context
 			}
@@ -438,26 +452,7 @@ function addScript(src: string) {
 	}
 
 	try {
-		const loaderUrl = chrome.runtime.getURL('/js/loader.js');
-		const scraperUrl = chrome.runtime.getURL('/js/scraper.js');
-
-		// Get the enabled state for this tab
-		chrome.runtime.sendMessage({ text: 'getTabEnabled' }, (response) => {
-			if (chrome.runtime.lastError || !response) {
-				return;
-			}
-			const enabled = response.enabled || false;
-
-			// If enabled, remove CSP meta tags and set up observer
-			if (enabled) {
-				removeCSPMetaTags();
-				observeCSPMetaTags();
-			}
-
-			injectCode(loaderUrl, enabled);
-		});
-
-		addScript(scraperUrl);
+		addScript(chrome.runtime.getURL('/js/scraper.js'));
 	} catch (error) {
 		// Silently catching invalidated extension context
 	}

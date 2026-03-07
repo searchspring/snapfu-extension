@@ -15,6 +15,7 @@ export const defaultHostnameConfig: HostnameConfig = {
 
 export const defaultConfig: StoredData = {
 	hostnameConfigs: {},
+	autoEnable: false,
 };
 
 export const setConfig = async (data: StoredData): Promise<void> => {
@@ -128,7 +129,7 @@ export const setTabEnabled = async (tabId: number, enabled: boolean): Promise<vo
 				...existing[key],
 				enabled,
 				...(hostname ? { hostname } : {}),
-			}
+			},
 		});
 	} catch (error) {
 		// Silently catching errors
@@ -152,13 +153,13 @@ export const deepCompare = <T>(x: T, y: T): boolean => {
 			}
 			return true;
 		}
-		
+
 		if (Array.isArray(x) || Array.isArray(y)) return false;
-		
+
 		const xKeys = Object.keys(x);
 		const yKeys = Object.keys(y);
 		if (xKeys.length !== yKeys.length) return false;
-		
+
 		for (const key of xKeys) {
 			if (!yKeys.includes(key)) return false;
 			if (!deepCompare((x as any)[key], (y as any)[key])) return false;
