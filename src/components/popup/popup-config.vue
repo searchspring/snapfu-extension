@@ -27,17 +27,24 @@
 					<span class="integration-header-content">
 						<span class="integration-title">Snap Integration</span>
 						<span class="integration-stats">
-							<span v-if="integrationDetails.context?.siteId" class="stat-item siteid">
+						<span v-if="integrationDetails.context?.siteId" class="stat-item siteid" title="site id">
 								<span class="stat-label">ID:</span>
 								<span class="stat-value">{{ integrationDetails.context.siteId }}</span>
 							</span>
 							<span v-if="integrationDetails.context?.siteId" class="stat-divider">|</span>
-							<span v-if="integrationDetails.version" class="stat-item version">
+							<img
+								v-if="integrationDetails.organization"
+								:title="integrationDetails.organization"
+								:src="integrationDetails.organization === 'searchspring' ? searchspringLogoIcon : athosLogoIcon"
+								class="org-logo"
+							/>
+							<span v-if="integrationDetails.context?.siteId" class="stat-divider">|</span>
+							<span v-if="integrationDetails.version" class="stat-item version" title="snap version">
 								<span class="stat-label">v</span>
 								<span class="stat-value">{{ integrationDetails.version }}</span>
 							</span>
 							<span v-if="integrationDetails.version && integrationDetails.controllers?.length" class="stat-divider">|</span>
-							<span v-if="integrationDetails.controllers?.length" class="stat-item controllers">
+							<span v-if="integrationDetails.controllers?.length" class="stat-item controllers" title="controllers">
 								<span class="stat-value">{{ integrationDetails.controllers.length }}</span>
 								<span class="stat-label">{{ integrationDetails.controllers.length === 1 ? 'ctrl' : 'ctrls' }}</span>
 							</span>
@@ -48,7 +55,7 @@
 				<transition name="expand">
 					<div class="integration-details" v-if="!integrationCollapsed">
 
-						<div v-if="integrationDetails.integrationUrl" class="integration-url">
+						<div v-if="integrationDetails.integrationUrl" class="integration-url" title="integration URL">
 							{{ integrationDetails.integrationUrl }}
 						</div>
 
@@ -146,6 +153,8 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
 import { HostnameConfig, LocalData, HostnameConfigValue } from '../../types/storage';
+import athosLogoIcon from '../../assets/athos-logo-icon.svg';
+import searchspringLogoIcon from '../../assets/searchspring-logo-icon.svg';
 import { defaultHostnameConfig, deepCompare } from '../../utilities/utilities';
 import PopupController from './popup-controller.vue';
 import Checkbox from '../shared/checkbox.vue';
@@ -397,6 +406,13 @@ function reloadTab() {
 			font-weight: 600;
 			font-size: 14px;
 			font-family: 'Avenir', Helvetica, Arial, sans-serif;
+		}
+
+		.org-logo {
+			height: 22px;
+			width: 22px;
+			object-fit: contain;
+			flex-shrink: 0;
 		}
 
 		.integration-stats {

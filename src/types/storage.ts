@@ -52,6 +52,7 @@ export type ControllerInfo = {
 export type LocalData = {
 	timestamp?: number;
 	version?: string;
+	organization?: 'searchspring' | 'athos';
 	controllers?: ControllerInfo[];
 	context?: {
 		[variable: string]: unknown;

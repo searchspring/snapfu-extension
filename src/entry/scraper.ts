@@ -5,6 +5,7 @@ const SCRAPE_INTERVAL = 1000;
 declare global {
 	interface Window {
 		searchspring?: any;
+		athos?: any;
 	}
 }
 
@@ -15,24 +16,30 @@ setInterval(() => {
 	timeElapsed += SCRAPE_INTERVAL;
 	const iframeBlockList = ['google.com'];
 	let browserGlobalSpace: Window | null | undefined = window;
-	if (!browserGlobalSpace?.searchspring) {
+	if (!browserGlobalSpace?.searchspring && !browserGlobalSpace?.athos) {
 		try {
-			// If we don't find searchspring global on window try looking in iframes
+			// If we don't find searchspring or athos global on window try looking in iframes
 			const iframes = document.querySelectorAll('iframe');
 
-			browserGlobalSpace = Array.from(iframes)
+			const browserGlobalSpaces = Array.from(iframes)
 				.filter((iframe) => iframeBlockList.filter((domain) => iframe?.src.includes(domain))?.length == 0)
 				.filter((iframe) => iframe.src?.includes(window.location.host))
-				.filter((iframe) => iframe.contentWindow?.searchspring)
-				?.pop()?.contentWindow;
+				.filter((iframe) => iframe.contentWindow?.searchspring || iframe.contentWindow?.athos);
+
+			if (browserGlobalSpaces.length > 1) {
+				console.warn('Multiple iframes with searchspring or athos detected. This may cause unexpected behavior.', browserGlobalSpaces);
+			}
+
+			browserGlobalSpace = browserGlobalSpaces.pop()?.contentWindow;
 		} catch (err) {
 			// Do nothing
 		}
 	}
 
-	if (browserGlobalSpace?.searchspring) {
-		const searchspring = browserGlobalSpace.searchspring;
-		const { controller, version, context } = searchspring;
+	if (browserGlobalSpace?.searchspring || browserGlobalSpace?.athos) {
+		const snapObject = browserGlobalSpace.searchspring || browserGlobalSpace.athos;
+		const organization = browserGlobalSpace.searchspring ? 'searchspring' : 'athos';
+		const { controller, version, context } = snapObject;
 		const controllerIds = Object.keys(controller || {});
 		const controllers: ControllerInfo[] = controllerIds.map((controllerId) => {
 			const { type, store, config } = controller[controllerId];
@@ -76,10 +83,11 @@ setInterval(() => {
 			};
 		});
 
-		const newData = {
+		const newData: LocalData = {
 			controllers,
 			version,
 			context,
+			organization,
 		};
 
 		const controllersAreTheSame = controllers.every((controller, index) => {
