@@ -367,8 +367,12 @@ function addScript(src: string) {
 				const currentHostname = getHostnameFromUrl(window.location.href);
 				const storedHostname = existing[key]?.hostname;
 				const enabled = storedHostname === currentHostname ? existing[key]?.enabled ?? false : false;
+				const hostnameToStore = currentHostname || storedHostname;
 				await chrome.storage.local.set({
-					[key]: { enabled, hostname: currentHostname },
+					[key]: {
+						enabled,
+						...(hostnameToStore ? { hostname: hostnameToStore } : {}),
+					},
 				});
 
 				document.addEventListener('snapfu-scrape', async (event) => {

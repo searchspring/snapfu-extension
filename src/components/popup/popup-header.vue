@@ -328,10 +328,6 @@ watch(
 				}
 
 				&:hover {
-					.open {
-						animation-play-state: paused;
-					}
-
 					svg {
 						animation-play-state: paused;
 					}
