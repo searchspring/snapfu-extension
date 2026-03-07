@@ -111,10 +111,23 @@ export const setTabEnabled = async (tabId: number, enabled: boolean): Promise<vo
 	try {
 		const key = String(tabId);
 		const existing = await chrome.storage.local.get(key);
+
+		// Persist the current hostname alongside the enabled state so that inject.ts
+		// can verify the state belongs to the same domain after a page reload.
+		let hostname: string | null = null;
+		try {
+			const tab = await chrome.tabs.get(tabId);
+			if (tab.url) hostname = getHostnameFromUrl(tab.url);
+		} catch (_) {
+			// Tab may be closing - fall back to existing stored hostname
+			hostname = existing[key]?.hostname ?? null;
+		}
+
 		await chrome.storage.local.set({
 			[key]: {
 				...existing[key],
 				enabled,
+				...(hostname ? { hostname } : {}),
 			}
 		});
 	} catch (error) {

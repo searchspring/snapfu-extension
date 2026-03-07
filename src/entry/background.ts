@@ -179,7 +179,8 @@ async function performRuleUpdate(config: StoredData) {
 			.split('\n')
 			.filter((a) => a.trim().length > 0);
 
-		// Block the original bundles specified in intercepts - scoped to this specific tab
+		// Block the original bundles specified in intercepts - scoped to this specific tab and
+		// hostname so that navigating to a new domain doesn't block that domain's bundle.
 		rawIntercepts.forEach((intercept) => {
 			rules.push({
 				id: ruleId++,
@@ -188,6 +189,7 @@ async function performRuleUpdate(config: StoredData) {
 				condition: { 
 					urlFilter: intercept,
 					tabIds: [tabId],
+					initiatorDomains: [hostname],
 					resourceTypes: [chrome.declarativeNetRequest.ResourceType.SCRIPT] 
 				},
 			});

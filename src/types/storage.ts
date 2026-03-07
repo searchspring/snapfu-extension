@@ -57,6 +57,7 @@ export type LocalData = {
 		[variable: string]: unknown;
 	};
 	enabled?: boolean; // Per-tab enabled state
+	hostname?: string; // The hostname active when enabled state was last set
 	integrationUrl?: string; // The bundle URL that was used to load the integration
 	error?: {
 		message: string;

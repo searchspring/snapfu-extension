@@ -361,10 +361,14 @@ function addScript(src: string) {
 				const key = String(tabId);
 				const existing = await chrome.storage.local.get(key);
 
-				// Always clear scrape data on page load, preserving only the enabled state
-				const enabled = existing[key]?.enabled ?? false;
+				// Always clear scrape data on page load, preserving only the enabled state.
+				// Only preserve enabled state if the tab is still on the same hostname —
+				// navigating to a new domain should behave as if a new tab were opened.
+				const currentHostname = getHostnameFromUrl(window.location.href);
+				const storedHostname = existing[key]?.hostname;
+				const enabled = (storedHostname === currentHostname) ? (existing[key]?.enabled ?? false) : false;
 				await chrome.storage.local.set({
-					[key]: { enabled },
+					[key]: { enabled, hostname: currentHostname },
 				});
 
 				document.addEventListener('snapfu-scrape', async (event) => {
