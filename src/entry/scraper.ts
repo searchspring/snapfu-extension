@@ -11,6 +11,7 @@ declare global {
 
 let data: LocalData = {};
 let timeElapsed = 0;
+let multipleIframesWarned = false;
 
 setInterval(() => {
 	timeElapsed += SCRAPE_INTERVAL;
@@ -26,7 +27,8 @@ setInterval(() => {
 				.filter((iframe) => iframe.src?.includes(window.location.host))
 				.filter((iframe) => iframe.contentWindow?.searchspring || iframe.contentWindow?.athos);
 
-			if (browserGlobalSpaces.length > 1) {
+			if (browserGlobalSpaces.length > 1 && !multipleIframesWarned) {
+				multipleIframesWarned = true;
 				console.warn('Multiple iframes with searchspring or athos detected. This may cause unexpected behavior.', browserGlobalSpaces);
 			}
 

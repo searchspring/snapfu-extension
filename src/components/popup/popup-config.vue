@@ -35,10 +35,11 @@
 							<img
 								v-if="integrationDetails.organization"
 								:title="integrationDetails.organization"
+								:alt="integrationDetails.organization"
 								:src="integrationDetails.organization === 'searchspring' ? searchspringLogoIcon : athosLogoIcon"
 								class="org-logo"
 							/>
-							<span v-if="integrationDetails.context?.siteId" class="stat-divider">|</span>
+							<span v-if="integrationDetails.organization" class="stat-divider">|</span>
 							<span v-if="integrationDetails.version" class="stat-item version" title="snap version">
 								<span class="stat-label">v</span>
 								<span class="stat-value">{{ integrationDetails.version }}</span>
