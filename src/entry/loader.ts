@@ -4,7 +4,7 @@ const url = loadScript?.getAttribute('url');
 const injectionTarget = loadScript?.getAttribute('injectionTarget') || '';
 
 const script = document.createElement('script');
-script.id = 'searchspring-snapfu-script';
+script.id = 'snapfu-script';
 script.src = url || '';
 script.innerHTML = context.trim();
 

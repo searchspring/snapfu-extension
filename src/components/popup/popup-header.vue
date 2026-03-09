@@ -19,7 +19,7 @@
 					d="M0,26.66c0-2.87,2.1-5.2,4.7-5.2h10.42c3.66,0,5.9,4.42,4.02,7.9l-4.37,8.11c-.86,1.57-2.37,2.53-4.02,2.53h-6.03C2.12,40,.02,37.66.02,34.8l-.02-8.14Z"
 				/>
 			</svg>
-			<img class="logo-text" src="../../assets/athos-text.svg" />
+			<img class="logo-text" src="../../assets/athos-logo-text--white.svg" />
 		</div>
 		<div v-if="currentHostname" class="hostname-pill" :title="currentHostname">
 			{{ currentHostname }}

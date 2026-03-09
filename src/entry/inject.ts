@@ -3,7 +3,7 @@ import { LocalData } from '../types/storage';
 
 // Selector to find Snap integration scripts (excludes chunk files, only matches bundle.js)
 const snapScriptSelector =
-	'script[id^=searchspring], script[id^=athos], script[src*="snapui.searchspring.io"][src$="bundle.js"], script[src*="snapui.athoscommerce.io"][src$="bundle.js"]';
+	'script[id=searchspring-context], script[id=athos-context], script[src*="snapui.searchspring.io"][src$="bundle.js"], script[src*="snapui.athoscommerce.io"][src$="bundle.js"]';
 
 /**
  * Removes CSP meta tags from the document to prevent Content Security Policy restrictions.

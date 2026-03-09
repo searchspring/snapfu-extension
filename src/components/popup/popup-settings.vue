@@ -106,7 +106,7 @@
 
 		<div class="option footer">
 			<span class="version">v{{ version }}</span>
-			<a href="https://github.com/searchspring/snapfu-extension" target="_blank"><img class="github" src="../../assets/github.svg" /></a>
+			<a href="https://github.com/athoscommerce/snapfu-extension" target="_blank"><img class="github" src="../../assets/github.svg" /></a>
 		</div>
 	</div>
 </template>
