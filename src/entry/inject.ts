@@ -320,7 +320,7 @@ async function injectCode(src: string, enabled: boolean) {
 		if (scriptUrl) {
 			const script = document.createElement('script');
 			script.src = src;
-			script.id = 'snapfu-script';
+			script.id = 'searchspring-snapfu-script';
 			script.setAttribute('url', scriptUrl);
 			script.setAttribute('injectionTarget', injectionTarget);
 
