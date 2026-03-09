@@ -46,7 +46,7 @@ setInterval(() => {
 		const controllers: ControllerInfo[] = controllerIds.map((controllerId) => {
 			const { type, store, config } = controller[controllerId];
 			const results = store.results;
-			
+
 			// Extract config details
 			let configDetails;
 			if (config) {
@@ -55,23 +55,23 @@ setInterval(() => {
 				if (config.plugins && Array.isArray(config.plugins)) {
 					pluginCount = config.plugins.filter((plugin: any) => Array.isArray(plugin)).length;
 				}
-				
+
 				configDetails = {
 					globals: config.globals ? { data: config.globals, collapsed: true } : undefined,
 					plugins: pluginCount,
 					settings: config.settings ? { data: config.settings, collapsed: true } : undefined,
 				};
-				
+
 				// Remove undefined properties
 				if (!configDetails.globals) delete configDetails.globals;
 				if (!configDetails.settings) delete configDetails.settings;
-				
+
 				// If all properties are undefined, set configDetails to undefined
 				if (Object.keys(configDetails).length === 0) {
 					configDetails = undefined;
 				}
 			}
-			
+
 			return {
 				id: controllerId,
 				type,
@@ -96,17 +96,17 @@ setInterval(() => {
 			const controller2 = data.controllers && data.controllers[index];
 
 			if (!controller2) return false;
-			
-			const basicPropsMatch = 
+
+			const basicPropsMatch =
 				controller.id === controller2.id &&
 				controller.type === controller2.type &&
 				controller.store.loaded === controller2.store.loaded &&
 				controller.store.results.length === controller2.store.results.length;
-			
+
 			// Deep comparison for config and pagination
 			const configMatch = JSON.stringify(controller.config) === JSON.stringify(controller2.config);
 			const paginationMatch = JSON.stringify(controller.store.pagination) === JSON.stringify(controller2.store.pagination);
-			
+
 			return basicPropsMatch && configMatch && paginationMatch;
 		});
 

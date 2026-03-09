@@ -10,17 +10,20 @@
 					<span class="stat-value">{{ controller.store?.loaded ? '✓' : '○' }}</span>
 					<span class="stat-label">{{ controller.store?.loaded ? 'loaded' : 'not loaded' }}</span>
 				</span>
-			<span v-if="controller.store?.loaded" class="stat-divider">|</span>
-			<span v-if="controller.store?.loaded" class="stat-item results">
-				<span class="stat-value">{{ controller.store.results.length }} {{ controller.store?.pagination?.totalResults ? `/${ controller.store?.pagination?.totalResults }` : '' }}</span>
-				<span class="stat-label">res</span>
-			</span>
+				<span v-if="controller.store?.loaded" class="stat-divider">|</span>
+				<span v-if="controller.store?.loaded" class="stat-item results">
+					<span class="stat-value"
+						>{{ controller.store.results.length }}
+						{{ controller.store?.pagination?.totalResults ? `/${controller.store?.pagination?.totalResults}` : '' }}</span
+					>
+					<span class="stat-label">res</span>
+				</span>
 
-			<span v-if="controller.config?.plugins !== undefined" class="stat-divider">|</span>
-			<span v-if="controller.config?.plugins !== undefined" class="stat-item plugins">
-				<span class="stat-value">{{ controller.config.plugins }}</span>
-				<span class="stat-label">plugins</span>
-			</span>
+				<span v-if="controller.config?.plugins !== undefined" class="stat-divider">|</span>
+				<span v-if="controller.config?.plugins !== undefined" class="stat-item plugins">
+					<span class="stat-value">{{ controller.config.plugins }}</span>
+					<span class="stat-label">plugins</span>
+				</span>
 			</span>
 		</div>
 
@@ -34,7 +37,7 @@
 						<pre v-if="!controller.config.globals.collapsed">{{ JSON.stringify(controller.config.globals.data, null, 2) }}</pre>
 					</transition>
 				</div>
-				
+
 				<div v-if="controller.config?.settings" class="config-section collapsible" @click.stop="handleToggleSettings">
 					<div class="config-header">
 						<b>settings</b>
@@ -155,7 +158,7 @@ const handleToggleSettings = () => {
 					font-size: 1.1em;
 					font-weight: 700;
 				}
-				
+
 				&.loaded {
 					.stat-value {
 						color: #27ae60;
@@ -165,7 +168,7 @@ const handleToggleSettings = () => {
 						font-weight: 500;
 					}
 				}
-				
+
 				&.not-loaded {
 					.stat-value {
 						color: #95a5a6;
@@ -179,7 +182,7 @@ const handleToggleSettings = () => {
 
 			&.results {
 				.stat-value {
-					background: #1D4990;
+					background: #1d4990;
 					color: white;
 					font-weight: 700;
 					padding: 1px 5px;
@@ -188,14 +191,14 @@ const handleToggleSettings = () => {
 					text-align: center;
 				}
 				.stat-label {
-					color: #1D4990;
+					color: #1d4990;
 					font-weight: 500;
 				}
 			}
 
 			&.plugins {
 				.stat-value {
-					background: #00AEEF;
+					background: #00aeef;
 					color: white;
 					font-weight: 700;
 					padding: 1px 5px;
@@ -204,7 +207,7 @@ const handleToggleSettings = () => {
 					text-align: center;
 				}
 				.stat-label {
-					color: #00AEEF;
+					color: #00aeef;
 					font-weight: 500;
 				}
 			}
@@ -241,17 +244,17 @@ const handleToggleSettings = () => {
 				font-family: 'Avenir', Helvetica, Arial, sans-serif;
 				letter-spacing: 0.8px;
 			}
-			
+
 			&.config-section {
 				flex-direction: column;
 				align-items: flex-start;
 				padding: 0;
 				background: transparent;
-				
+
 				&.collapsible {
 					cursor: pointer;
 					background: rgba(0, 0, 0, 0.05);
-					
+
 					.config-header {
 						width: 100%;
 						display: flex;
@@ -259,13 +262,13 @@ const handleToggleSettings = () => {
 						align-items: center;
 						padding: 6px 10px 6px 20px;
 						box-sizing: border-box;
-						
+
 						b {
 							margin: 0;
 						}
 					}
 				}
-				
+
 				pre {
 					width: 100%;
 					margin: 0;
@@ -285,28 +288,28 @@ const handleToggleSettings = () => {
 			}
 		}
 	}
-	
+
 	// Expand transition for collapsible sections
 	.expand-enter-active {
 		transition: opacity 0.2s ease, transform 0.2s ease;
 		overflow: hidden;
 	}
-	
+
 	.expand-leave-active {
 		transition: opacity 0.15s ease, transform 0.15s ease;
 		overflow: hidden;
 	}
-	
+
 	.expand-enter-from {
 		opacity: 0;
 		transform: translateY(-3px);
 	}
-	
+
 	.expand-leave-to {
 		opacity: 0;
 		transform: translateY(-3px);
 	}
-	
+
 	.expand-enter-to,
 	.expand-leave-from {
 		opacity: 1;

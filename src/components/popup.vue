@@ -22,22 +22,24 @@
 				:enabled="state.enabled"
 				@reset="reset"
 				@set="set"
-			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
-			@toggleIntegrationCollapsed="toggleIntegrationCollapsed"
-			@reloadTab="reloadCurrentTab"
-		/>
-		<PopupSettings
-			v-show="state?.settings.show"
-			:version="props.version"
-			:currentHostname="state.currentHostname"
-			:hostnameConfig="state.hostnameConfig"
-			:savedHostnameConfig="state.savedHostnameConfig"
-			@reset="reset"
-			@resetAppConfig="resetAppConfig"
-			@clearAllStorage="clearAllStorage"
-			@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
-			ref="settingsRef"
-		/>
+				@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+				@toggleIntegrationCollapsed="toggleIntegrationCollapsed"
+				@reloadTab="reloadCurrentTab"
+			/>
+			<PopupSettings
+				v-show="state?.settings.show"
+				:version="props.version"
+				:currentHostname="state.currentHostname"
+				:hostnameConfig="state.hostnameConfig"
+				:savedHostnameConfig="state.savedHostnameConfig"
+				:autoEnable="state.config.autoEnable ?? false"
+				@reset="reset"
+				@resetAppConfig="resetAppConfig"
+				@clearAllStorage="clearAllStorage"
+				@update:hostnameConfig="(value: HostnameConfig) => state.hostnameConfig = value"
+				@toggleAutoEnable="toggleAutoEnable"
+				ref="settingsRef"
+			/>
 		</div>
 	</div>
 </template>
@@ -49,16 +51,16 @@ import PopupHeader from './popup/popup-header.vue';
 import PopupSettings from './popup/popup-settings.vue';
 import PopupConfig from './popup/popup-config.vue';
 
-import { 
-	defaultHostnameConfig, 
-	getConfig, 
-	setConfig, 
-	deepCompare, 
+import {
+	defaultHostnameConfig,
+	getConfig,
+	setConfig,
+	deepCompare,
 	getHostnameConfig,
 	setHostnameConfig,
 	getTabEnabled,
 	setTabEnabled,
-	safeReloadTab
+	safeReloadTab,
 } from '../utilities/utilities';
 
 const props = defineProps<{
@@ -95,11 +97,11 @@ onMounted(async () => {
 		// Can't get tab info
 		return;
 	}
-	
+
 	const tabId = tab.id || null;
 	const url = tab.url || '';
 	const isHttpUrl = url.startsWith('http://') || url.startsWith('https://');
-	
+
 	// Extract hostname from URL directly instead of using getCurrentHostname
 	let hostname: string | null = null;
 	try {
@@ -108,27 +110,25 @@ onMounted(async () => {
 	} catch {
 		// Invalid URL
 	}
-	
+
 	const validHostname = isHttpUrl ? hostname : null;
 	state.currentHostname = validHostname;
 	state.currentTabId = tabId;
-	
+
 	// Fetch data sequentially (parallel loading causes rendering issues)
 	const config = await getConfig();
 	state.config = config;
 	state.savedConfig = JSON.parse(JSON.stringify(config));
-	
+
 	// Get hostname config
-	const hostnameConfig = validHostname 
-		? await getHostnameConfig(validHostname) 
-		: JSON.parse(JSON.stringify(defaultHostnameConfig));
+	const hostnameConfig = validHostname ? await getHostnameConfig(validHostname) : JSON.parse(JSON.stringify(defaultHostnameConfig));
 	state.hostnameConfig = hostnameConfig;
 	state.savedHostnameConfig = JSON.parse(JSON.stringify(hostnameConfig));
-	
+
 	// Get enabled state
 	const enabled = tabId ? await getTabEnabled(tabId) : false;
 	state.enabled = enabled;
-	
+
 	// Set integration details if available
 	if (tabId) {
 		const localData = await chrome.storage.local.get(String(tabId));
@@ -147,17 +147,17 @@ onMounted(async () => {
 	try {
 		chrome.storage.onChanged.addListener(async (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
 			if (ignoringStorageUpdates) return; // Skip updates during toggle operation
-			
+
 			if (tabId && area === 'local') {
 				try {
 					const storedLocalData = await chrome.storage.local.get();
 					const newData = storedLocalData[tabId];
-					
+
 					// Update enabled state if it changed
 					if (changes[tabId]?.newValue?.enabled !== undefined) {
 						state.enabled = changes[tabId].newValue.enabled;
 					}
-					
+
 					// Whenever we get data with a timestamp, exit loading state
 					// This includes: successful integration found, error occurred, or "not found" after timeout
 					if (newData?.timestamp) {
@@ -167,7 +167,7 @@ onMounted(async () => {
 								const existingController = state.integration.details.controllers?.[index];
 								if (existingController && existingController.id === newController.id) {
 									newController.collapsed = existingController.collapsed;
-									
+
 									// Preserve config collapsed states
 									if (existingController.config?.globals && newController.config?.globals) {
 										newController.config.globals.collapsed = existingController.config.globals.collapsed;
@@ -197,28 +197,28 @@ async function saveConfig() {
 	const contextChanged = state.hostnameConfig.bundle.context !== state.savedHostnameConfig.bundle.context;
 	const mergeContextChanged = state.hostnameConfig.bundle.mergeContext !== state.savedHostnameConfig.bundle.mergeContext;
 	const injectionTargetChanged = state.hostnameConfig.bundle.injectionTarget !== state.savedHostnameConfig.bundle.injectionTarget;
-	
+
 	// Check if intercepts changed (requires reload to update declarativeNetRequest rules)
 	const interceptsChanged = state.hostnameConfig.intercepts !== state.savedHostnameConfig.intercepts;
-	
-	const needsReload = (bundleUrlChanged || contextChanged || mergeContextChanged || injectionTargetChanged || interceptsChanged) 
-		&& state.enabled && state.currentTabId;
-	
+
+	const needsReload =
+		(bundleUrlChanged || contextChanged || mergeContextChanged || injectionTargetChanged || interceptsChanged) && state.enabled && state.currentTabId;
+
 	// Prepare for reload before saving changes
 	if (needsReload) {
 		await prepareForReload();
 	}
-	
+
 	// Save global config (which now just stores hostname configs)
 	setConfig(state.config);
 	state.savedConfig = JSON.parse(JSON.stringify(state.config));
-	
+
 	// Save hostname config
 	if (state.currentHostname) {
 		setHostnameConfig(state.currentHostname, state.hostnameConfig);
 		state.savedHostnameConfig = JSON.parse(JSON.stringify(state.hostnameConfig));
 	}
-	
+
 	// Reload page if bundle settings or intercepts changed and extension is enabled
 	if (needsReload && state.currentTabId) {
 		await safeReloadTab(state.currentTabId);
@@ -236,7 +236,7 @@ function detectChanges() {
 }
 
 function reset(configPath: string, location = 'default') {
-	const paths = configPath.split('.').filter(p => p);
+	const paths = configPath.split('.').filter((p) => p);
 	const configLocation = location == 'saved' ? state.savedHostnameConfig : defaultHostnameConfig;
 
 	const savedValue: HostnameConfigValue | undefined = paths.reduce<HostnameConfigValue | undefined>((configuration, path: string) => {
@@ -262,7 +262,7 @@ function reset(configPath: string, location = 'default') {
 }
 
 function set(configPath: string, value: HostnameConfigValue | undefined) {
-	const paths = configPath.split('.').filter(p => p);
+	const paths = configPath.split('.').filter((p) => p);
 
 	paths.reduce<HostnameConfigValue | undefined>((configuration, path: string, index) => {
 		if (configuration && typeof configuration === 'object' && configuration !== null) {
@@ -285,11 +285,11 @@ function set(configPath: string, value: HostnameConfigValue | undefined) {
 async function prepareForReload() {
 	// Ignore storage updates during reload to prevent interference
 	ignoringStorageUpdates = true;
-	
+
 	// Clear existing data and enter loading state
 	state.integration.details = {};
 	state.integration.loading = true;
-	
+
 	// Re-enable storage updates after reload completes
 	// Use a timeout to allow the page to start reloading
 	setTimeout(() => {
@@ -300,9 +300,9 @@ async function prepareForReload() {
 async function toggleOnOff() {
 	if (!state.currentTabId || !state.currentHostname) return;
 	if (state.enabled === null) return; // Not loaded yet
-	
+
 	const newEnabled = !state.enabled;
-	
+
 	// Close settings if open
 	if (state.settings.show) {
 		state.settings.show = false;
@@ -310,23 +310,23 @@ async function toggleOnOff() {
 			settingsRef.value.resetConfirmations();
 		}
 	}
-	
+
 	// Prepare for reload
 	await prepareForReload();
-	
+
 	// Update enabled state
 	state.enabled = newEnabled;
 	await setTabEnabled(state.currentTabId, newEnabled);
-	
+
 	// When enabling, ensure hostname config exists
 	if (newEnabled) {
 		await setHostnameConfig(state.currentHostname, state.hostnameConfig);
 		state.savedHostnameConfig = JSON.parse(JSON.stringify(state.hostnameConfig));
-		
+
 		// Wait for storage changes to propagate and intercepts to be updated
-		await new Promise(resolve => setTimeout(resolve, 100));
+		await new Promise((resolve) => setTimeout(resolve, 100));
 	}
-	
+
 	// Reload the page
 	if (state.currentTabId) {
 		await safeReloadTab(state.currentTabId);
@@ -343,10 +343,10 @@ function toggleAppSettings() {
 async function toggleIntegrationCollapsed() {
 	// Toggle the collapsed state
 	state.hostnameConfig.integrationCollapsed = !state.hostnameConfig.integrationCollapsed;
-	
+
 	// Update saved state immediately to prevent flash of unsaved changes indicator
 	state.savedHostnameConfig.integrationCollapsed = state.hostnameConfig.integrationCollapsed;
-	
+
 	// Auto-save this preference without triggering a reload
 	if (state.currentHostname) {
 		await setHostnameConfig(state.currentHostname, state.hostnameConfig);
@@ -360,19 +360,25 @@ async function reloadCurrentTab() {
 	}
 }
 
+// Auto-saves — no page reload required
+async function toggleAutoEnable() {
+	state.config.autoEnable = !(state.config.autoEnable ?? false);
+	await setConfig(state.config);
+}
+
 async function resetAppConfig() {
 	// Prepare for reload before making changes
 	if (state.enabled && state.currentTabId) {
 		await prepareForReload();
 	}
-	
+
 	// Reset the current hostname's config to defaults
 	if (state.currentHostname) {
 		state.hostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
 		state.savedHostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
 		setHostnameConfig(state.currentHostname, state.hostnameConfig);
 	}
-	
+
 	// Reload the current tab to apply changes (only if extension is enabled)
 	if (state.enabled && state.currentTabId) {
 		await safeReloadTab(state.currentTabId);
@@ -385,23 +391,23 @@ async function clearAllStorage() {
 		if (state.currentTabId && state.currentHostname) {
 			await prepareForReload();
 		}
-		
+
 		// Clear all sync storage (hostname configs)
 		await chrome.storage.sync.clear();
-		
+
 		// Clear all local storage (per-tab enabled states and integration details)
 		await chrome.storage.local.clear();
-		
+
 		// Clear all session rules (intercepts and CSP rules)
 		const sessionRules = await chrome.declarativeNetRequest.getSessionRules();
-		const ruleIds = sessionRules.map(rule => rule.id);
+		const ruleIds = sessionRules.map((rule) => rule.id);
 		if (ruleIds.length > 0) {
 			await chrome.declarativeNetRequest.updateSessionRules({
 				removeRuleIds: ruleIds,
-				addRules: []
+				addRules: [],
 			});
 		}
-		
+
 		// Reset popup state to defaults
 		state.config = { hostnameConfigs: {} };
 		state.savedConfig = { hostnameConfigs: {} };
@@ -409,9 +415,9 @@ async function clearAllStorage() {
 		state.savedHostnameConfig = JSON.parse(JSON.stringify(defaultHostnameConfig));
 		state.enabled = false;
 		state.integration.loading = false;
-		
+
 		state.settings.show = false;
-		
+
 		// Reload the current tab to apply changes (only if we have a valid hostname)
 		if (state.currentTabId && state.currentHostname) {
 			await safeReloadTab(state.currentTabId);
@@ -451,19 +457,19 @@ body {
 	width: fit-content;
 	height: fit-content;
 	max-height: 600px;
-	border: 1px solid #1D4990;
+	border: 1px solid #2c3e50;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
 
 	a {
-		color: #00AEEF;
+		color: #00aeef;
 	}
 
 	button {
 		cursor: pointer;
-		background: #1D4990;
+		background: #1d4990;
 		color: #fff;
 		border-radius: 4px;
 		border: none;
@@ -471,11 +477,11 @@ body {
 		font-size: 10px;
 		font-weight: 600;
 		transition: all 0.2s ease;
-		
+
 		&:hover {
 			transform: translateY(-1px);
 		}
-		
+
 		&:active {
 			transform: translateY(0);
 		}
@@ -511,19 +517,55 @@ body {
 		overflow-x: hidden;
 		flex: 1;
 		min-height: 0;
-		
+		// Config panel (light): dark scrollbar
+		scrollbar-width: thin;
+		scrollbar-color: rgba(29, 73, 144, 0.25) transparent;
+
+		&::-webkit-scrollbar {
+			width: 5px;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: rgba(29, 73, 144, 0.06);
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background: rgba(29, 73, 144, 0.25);
+
+			&:hover {
+				background: rgba(29, 73, 144, 0.45);
+			}
+		}
+
+		// Settings panel (dark): light scrollbar
+		&.settings-active {
+			scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+
+			&::-webkit-scrollbar-track {
+				background: rgba(255, 255, 255, 0.05);
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background: rgba(255, 255, 255, 0.15);
+
+				&:hover {
+					background: rgba(255, 255, 255, 0.28);
+				}
+			}
+		}
+
 		.page-config-wrapper,
 		.page-settings {
 			width: 100%;
 			box-sizing: border-box;
 		}
-		
+
 		&.settings-active {
 			.page-config-wrapper {
 				display: none !important;
 			}
 		}
-		
+
 		&:not(.settings-active) {
 			.page-settings {
 				display: none !important;

@@ -23,7 +23,23 @@ import {
 	faSyncAlt,
 } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faBan, faGear, faSave, faToggleOff, faUndo, faMagnifyingGlass, faList, faLocationCrosshairs, faGrip, faAngleUp, faAngleDown, faCircleInfo, faChevronRight, faCodeMerge, faSyncAlt);
+library.add(
+	faBan,
+	faGear,
+	faSave,
+	faToggleOff,
+	faUndo,
+	faMagnifyingGlass,
+	faList,
+	faLocationCrosshairs,
+	faGrip,
+	faAngleUp,
+	faAngleDown,
+	faCircleInfo,
+	faChevronRight,
+	faCodeMerge,
+	faSyncAlt
+);
 
 const snapp = createApp(popup, { version: packageJson.version });
 snapp.component('font-awesome-icon', FontAwesomeIcon);

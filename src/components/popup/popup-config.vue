@@ -27,7 +27,7 @@
 					<span class="integration-header-content">
 						<span class="integration-title">Snap Integration</span>
 						<span class="integration-stats">
-						<span v-if="integrationDetails.context?.siteId" class="stat-item siteid" title="site id">
+							<span v-if="integrationDetails.context?.siteId" class="stat-item siteid" title="site id">
 								<span class="stat-label">ID:</span>
 								<span class="stat-value">{{ integrationDetails.context.siteId }}</span>
 							</span>
@@ -55,42 +55,53 @@
 
 				<transition name="expand">
 					<div class="integration-details" v-if="!integrationCollapsed">
-
 						<div v-if="integrationDetails.integrationUrl" class="integration-url" title="integration URL">
 							{{ integrationDetails.integrationUrl }}
 						</div>
 
 						<div class="description controllers">
-							<div :key="controller.id" v-for="controller in integrationDetails.controllers"
-								@click="() => (controller.collapsed = !controller.collapsed)" class="controller-wrapper">
-								<PopupController :controller="controller"
-									@toggleGlobals="() => controller.config && controller.config.globals && (controller.config.globals.collapsed = !controller.config.globals.collapsed)"
-									@toggleSettings="() => controller.config && controller.config.settings && (controller.config.settings.collapsed = !controller.config.settings.collapsed)" />
+							<div
+								:key="controller.id"
+								v-for="controller in integrationDetails.controllers"
+								@click="() => (controller.collapsed = !controller.collapsed)"
+								class="controller-wrapper"
+							>
+								<PopupController
+									:controller="controller"
+									@toggleGlobals="
+										() =>
+											controller.config && controller.config.globals && (controller.config.globals.collapsed = !controller.config.globals.collapsed)
+									"
+									@toggleSettings="
+										() =>
+											controller.config &&
+											controller.config.settings &&
+											(controller.config.settings.collapsed = !controller.config.settings.collapsed)
+									"
+								/>
 							</div>
 						</div>
 					</div>
 				</transition>
 			</div>
 
-			<div v-if="!integrationLoading && currentHostname && !integrationDetails.version"
-				:class="{ 'alert': true, 'alert-information': !enabled, 'alert-warning': enabled }">
+			<div
+				v-if="!integrationLoading && currentHostname && !integrationDetails.version"
+				:class="{ alert: true, 'alert-information': !enabled, 'alert-warning': enabled }"
+			>
 				<div class="alert-content">
 					<div class="alert-message">
 						<div v-if="enabled">
 							<strong>
-								{{ integrationDetails.error?.message || 'Failed to load bundle. Check console for possible errors.'
-								}}
+								{{ integrationDetails.error?.message || 'Failed to load bundle. Check console for possible errors.' }}
 							</strong>
 
 							<div v-if="integrationDetails.error?.details">{{ integrationDetails.error.details }}</div>
 							<div class="error-url" v-if="integrationDetails.error?.url">
-								<a :href="integrationDetails.error.url" target="_blank"
-									rel="noopener noreferrer">{{ integrationDetails.error.url }}</a>
+								<a :href="integrationDetails.error.url" target="_blank" rel="noopener noreferrer">{{ integrationDetails.error.url }}</a>
 							</div>
 						</div>
-						<div v-else>
-							No Snap integration found.
-						</div>
+						<div v-else>No Snap integration found.</div>
 					</div>
 					<button class="refresh-button" @click="reloadTab" title="Reload tab">
 						<font-awesome-icon icon="sync-alt" />
@@ -109,13 +120,17 @@
 					<span class="heading-with-buttons">
 						Bundle URL
 						<span class="url-actions">
-							<button class="url-cdn"
-								@click="set('bundle.url', 'https://snapui.athoscommerce.io/siteid/branch/bundle.js')">cdn</button>
+							<button class="url-cdn" @click="set('bundle.url', 'https://snapui.athoscommerce.io/siteid/branch/bundle.js')">cdn</button>
 							<button class="url-local" @click="set('bundle.url', 'https://localhost:3333/bundle.js')">local</button>
 						</span>
 					</span>
-					<font-awesome-icon v-if="detectChanges('bundle.url', 'default')" class="reset" @click="reset('bundle.url')"
-						icon="undo" title="reset bundle URL" />
+					<font-awesome-icon
+						v-if="detectChanges('bundle.url', 'default')"
+						class="reset"
+						@click="reset('bundle.url')"
+						icon="undo"
+						title="reset bundle URL"
+					/>
 				</h3>
 
 				<div class="description">URL of bundle to inject onto the page.<br /></div>
@@ -126,23 +141,37 @@
 			<div v-if="currentHostname" class="option context">
 				<h3>
 					Script Context
-					<font-awesome-icon v-if="detectChanges('bundle.context', 'default')" class="reset"
-						@click="reset('bundle.context')" icon="undo" title="reset context variables" />
+					<font-awesome-icon
+						v-if="detectChanges('bundle.context', 'default')"
+						class="reset"
+						@click="reset('bundle.context')"
+						icon="undo"
+						title="reset context variables"
+					/>
 				</h3>
 
 				<div class="description">Contextual variables to be injected with the script.</div>
 
 				<div class="textarea-tabbed">
 					<div class="textarea-wrapper">
-						<textarea placeholder="context variables should be here..." required="true" spellcheck="false"
-							:value="hostnameConfig.bundle?.context" @input="updateContext"
-							:rows="(hostnameConfig.bundle?.context || '').split('\n').length" />
+						<textarea
+							placeholder="context variables should be here..."
+							required="true"
+							spellcheck="false"
+							:value="hostnameConfig.bundle?.context"
+							@input="updateContext"
+							:rows="(hostnameConfig.bundle?.context || '').split('\n').length"
+						/>
 
 						<div class="textarea-tab">
 							<font-awesome-icon icon="code-merge" class="merge-icon" />
-							<Checkbox label="Merge with page context" label-placement="right" size="small"
+							<Checkbox
+								label="Merge with page context"
+								label-placement="right"
+								size="small"
 								:model-value="hostnameConfig.bundle.mergeContext"
-								@update:model-value="(value: boolean) => updateMergeContextValue(value)" />
+								@update:model-value="(value: boolean) => updateMergeContextValue(value)"
+							/>
 						</div>
 					</div>
 				</div>
@@ -179,26 +208,28 @@ const emit = defineEmits<{
 }>();
 
 function detectChanges(configPath = '', location = 'saved') {
-	const paths = configPath.split('.').filter(p => p);
+	const paths = configPath.split('.').filter((p) => p);
 
 	const configLocation = location == 'saved' ? props.savedHostnameConfig : defaultHostnameConfig;
-	const savedValue: HostnameConfigValue | undefined = configPath && paths.length > 0
-		? paths.reduce<HostnameConfigValue | undefined>((configuration, path: string) => {
-			if (configuration && typeof configuration === 'object' && configuration !== null && path in configuration) {
-				return (configuration as Record<string, HostnameConfigValue>)[path];
-			}
-			return undefined;
-		}, configLocation)
-		: configLocation;
+	const savedValue: HostnameConfigValue | undefined =
+		configPath && paths.length > 0
+			? paths.reduce<HostnameConfigValue | undefined>((configuration, path: string) => {
+					if (configuration && typeof configuration === 'object' && configuration !== null && path in configuration) {
+						return (configuration as Record<string, HostnameConfigValue>)[path];
+					}
+					return undefined;
+			  }, configLocation)
+			: configLocation;
 
-	const value: HostnameConfigValue | undefined = configPath && paths.length > 0
-		? paths.reduce<HostnameConfigValue | undefined>((configuration, path: string) => {
-			if (configuration && typeof configuration === 'object' && configuration !== null && path in configuration) {
-				return (configuration as Record<string, HostnameConfigValue>)[path];
-			}
-			return undefined;
-		}, props.hostnameConfig)
-		: props.hostnameConfig;
+	const value: HostnameConfigValue | undefined =
+		configPath && paths.length > 0
+			? paths.reduce<HostnameConfigValue | undefined>((configuration, path: string) => {
+					if (configuration && typeof configuration === 'object' && configuration !== null && path in configuration) {
+						return (configuration as Record<string, HostnameConfigValue>)[path];
+					}
+					return undefined;
+			  }, props.hostnameConfig)
+			: props.hostnameConfig;
 
 	if (typeof savedValue != 'undefined' && typeof value != 'undefined') {
 		try {
@@ -225,7 +256,7 @@ function updateBundleUrl(event: Event) {
 	const target = event.target as HTMLInputElement;
 	const updated = {
 		...props.hostnameConfig,
-		bundle: { ...props.hostnameConfig.bundle, url: target.value }
+		bundle: { ...props.hostnameConfig.bundle, url: target.value },
 	};
 	emit('update:hostnameConfig', updated);
 }
@@ -234,7 +265,7 @@ function updateContext(event: Event) {
 	const target = event.target as HTMLTextAreaElement;
 	const updated = {
 		...props.hostnameConfig,
-		bundle: { ...props.hostnameConfig.bundle, context: target.value }
+		bundle: { ...props.hostnameConfig.bundle, context: target.value },
 	};
 	emit('update:hostnameConfig', updated);
 }
@@ -242,7 +273,7 @@ function updateContext(event: Event) {
 function updateMergeContextValue(checked: boolean) {
 	const updated = {
 		...props.hostnameConfig,
-		bundle: { ...props.hostnameConfig.bundle, mergeContext: checked }
+		bundle: { ...props.hostnameConfig.bundle, mergeContext: checked },
 	};
 	emit('update:hostnameConfig', updated);
 }
@@ -269,7 +300,7 @@ function reloadTab() {
 		pointer-events: none;
 
 		.loading-message {
-			background: #00AEEF;
+			background: #00aeef;
 			color: white;
 			padding: 10px 16px;
 			border-radius: 4px;
@@ -283,7 +314,6 @@ function reloadTab() {
 	}
 
 	@keyframes gentlePulse {
-
 		0%,
 		100% {
 			transform: scale(1);
@@ -461,7 +491,7 @@ function reloadTab() {
 
 			&.controllers {
 				.stat-value {
-					background: #1D4990;
+					background: #1d4990;
 					color: white;
 					font-weight: 700;
 					padding: 1px 6px;
@@ -471,7 +501,7 @@ function reloadTab() {
 				}
 
 				.stat-label {
-					color: #1D4990;
+					color: #1d4990;
 					font-weight: 500;
 					font-size: 0.95em;
 				}
@@ -487,7 +517,7 @@ function reloadTab() {
 			cursor: pointer;
 			margin: 0;
 
-			>span {
+			> span {
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
@@ -499,15 +529,13 @@ function reloadTab() {
 			.integration-url {
 				margin-bottom: 15px;
 				font-size: 9px;
-				color: #1D4990;
+				color: #1d4990;
 				font-family: 'Monaco', 'Courier New', monospace;
 				font-weight: 500;
 				word-break: break-all;
 				line-height: 1.5;
 			}
 		}
-
-
 
 		.description.controllers {
 			padding: 0;
@@ -656,7 +684,7 @@ function reloadTab() {
 					box-shadow: 0 2px 4px rgba(106, 176, 76, 0.3);
 				}
 			}
-			
+
 			&:active {
 				transform: translateY(0);
 			}

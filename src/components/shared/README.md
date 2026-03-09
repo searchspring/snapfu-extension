@@ -9,6 +9,7 @@ This directory contains reusable UI components that can be used throughout the S
 A flat, modern checkbox component with smooth animations and the extension's design aesthetic.
 
 **Features:**
+
 - Custom SVG checkmark icon
 - Flat solid color background when checked (no gradients)
 - Compact 16×16px size that aligns well with text
@@ -18,6 +19,7 @@ A flat, modern checkbox component with smooth animations and the extension's des
 - Slot content support
 
 **Usage:**
+
 ```vue
 <Checkbox v-model="isChecked" label="Enable feature:" />
 <Checkbox v-model="isChecked" label="Enable feature" label-placement="right" />
@@ -32,21 +34,25 @@ See [CHECKBOX_USAGE.md](./CHECKBOX_USAGE.md) for detailed documentation.
 An animated logo loader using pulsing brick animations.
 
 **Features:**
+
 - Athos logo with sequential brick pulse animation
 - Uses extension color palette (#1D4990, #00AEEF)
 - Configurable animation timing
 
 **Usage:**
+
 ```vue
 <LoadingPulse />
 ```
 
 **Sizing:**
+
 - Small: 14×14px with 11px font
 - Medium: 16×16px with 12px font (default)
 - Large: 18×18px with 13px font
 
 **Styling:**
+
 - Width: 40px × 40px
 - Animation: 1.6s ease-in-out infinite
 - Staggered delays: 0s, 0.2s, 0.4s, 0.6s
@@ -58,6 +64,7 @@ An animated logo loader using pulsing brick animations.
 A 3D rotating cube loader featuring the Athos logo on all faces.
 
 **Features:**
+
 - Full 3D cube rotation animation
 - Logo appears on all 6 faces
 - Configurable rotation speed
@@ -69,12 +76,14 @@ A 3D rotating cube loader featuring the Athos logo on all faces.
 | `speed` | `number` | `3` | Animation duration in seconds |
 
 **Usage:**
+
 ```vue
 <LoadingCube />
 <LoadingCube :speed="5" />
 ```
 
 **Styling:**
+
 - Width: 40px × 40px
 - 3D perspective: 1000px
 - Infinite rotation on X and Y axes
@@ -87,21 +96,25 @@ A 3D rotating cube loader featuring the Athos logo on all faces.
 All shared components follow the extension's design system:
 
 **Colors:**
+
 - Primary Blue: `#1D4990`
 - Light Blue: `#00AEEF` / `#4c76c8`
 - Accent Pink: `#f2647c`
 - Text: `#2c3e50`
 
 **Typography:**
+
 - Font Family: 'Avenir', Helvetica, Arial, sans-serif
 - Font smoothing: antialiased
 
 **Animations:**
+
 - Easing: `ease`, `ease-in-out`, or cubic-bezier for natural motion
 - Duration: 0.15s - 0.25s for interactions, longer for loaders
 - Transforms: Use translateY, scale for micro-interactions
 
 **Spacing:**
+
 - Border radius: 3px for small elements
 - Padding: Consistent multiples of 5px
 - Gaps: 5px, 8px, 10px, 12px

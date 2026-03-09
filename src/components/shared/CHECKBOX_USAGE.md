@@ -17,10 +17,7 @@ A stylized checkbox component that matches the Snapfu extension design aesthetic
 
 ```vue
 <template>
-  <Checkbox 
-    v-model="isChecked"
-    label="Enable feature"
-  />
+	<Checkbox v-model="isChecked" label="Enable feature" />
 </template>
 
 <script setup lang="ts">
@@ -37,25 +34,14 @@ The checkbox comes in three sizes: `small`, `medium` (default), and `large`:
 
 ```vue
 <template>
-  <!-- Small (14×14px) -->
-  <Checkbox 
-    v-model="isChecked"
-    label="Small checkbox"
-    size="small"
-  />
+	<!-- Small (14×14px) -->
+	<Checkbox v-model="isChecked" label="Small checkbox" size="small" />
 
-  <!-- Medium (16×16px - default) -->
-  <Checkbox 
-    v-model="isChecked"
-    label="Medium checkbox"
-  />
+	<!-- Medium (16×16px - default) -->
+	<Checkbox v-model="isChecked" label="Medium checkbox" />
 
-  <!-- Large (18×18px) -->
-  <Checkbox 
-    v-model="isChecked"
-    label="Large checkbox"
-    size="large"
-  />
+	<!-- Large (18×18px) -->
+	<Checkbox v-model="isChecked" label="Large checkbox" size="large" />
 </template>
 ```
 
@@ -65,18 +51,11 @@ By default, the label appears to the left of the checkbox. You can change this w
 
 ```vue
 <template>
-  <!-- Label on the left (default) -->
-  <Checkbox 
-    v-model="isChecked"
-    label="Enable feature:"
-  />
+	<!-- Label on the left (default) -->
+	<Checkbox v-model="isChecked" label="Enable feature:" />
 
-  <!-- Label on the right -->
-  <Checkbox 
-    v-model="isChecked"
-    label="Enable feature"
-    label-placement="right"
-  />
+	<!-- Label on the right -->
+	<Checkbox v-model="isChecked" label="Enable feature" label-placement="right" />
 </template>
 ```
 
@@ -84,9 +63,9 @@ By default, the label appears to the left of the checkbox. You can change this w
 
 ```vue
 <template>
-  <Checkbox v-model="mergeContext">
-    <span>Merge context</span>
-  </Checkbox>
+	<Checkbox v-model="mergeContext">
+		<span>Merge context</span>
+	</Checkbox>
 </template>
 ```
 
@@ -94,11 +73,7 @@ By default, the label appears to the left of the checkbox. You can change this w
 
 ```vue
 <template>
-  <Checkbox 
-    v-model="isChecked"
-    label="Disabled option"
-    :disabled="true"
-  />
+	<Checkbox v-model="isChecked" label="Disabled option" :disabled="true" />
 </template>
 ```
 
@@ -106,39 +81,37 @@ By default, the label appears to the left of the checkbox. You can change this w
 
 ```vue
 <template>
-  <Checkbox 
-    :model-value="config.enabled" 
-    @update:model-value="handleChange"
-  />
+	<Checkbox :model-value="config.enabled" @update:model-value="handleChange" />
 </template>
 
 <script setup lang="ts">
 function handleChange(value: boolean) {
-  // Handle the change
-  console.log('Checkbox changed to:', value);
+	// Handle the change
+	console.log('Checkbox changed to:', value);
 }
 </script>
 ```
 
 ## Props
 
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `modelValue` | `boolean` | Yes | - | The checked state of the checkbox |
-| `label` | `string` | No | `undefined` | Optional label text to display next to checkbox |
-| `labelPlacement` | `'left' \| 'right'` | No | `'left'` | Position of the label relative to the checkbox |
-| `size` | `'small' \| 'medium' \| 'large'` | No | `'medium'` | Size of the checkbox (small: 14×14px, medium: 16×16px, large: 18×18px) |
-| `disabled` | `boolean` | No | `false` | Whether the checkbox is disabled |
+| Prop             | Type                             | Required | Default     | Description                                                            |
+| ---------------- | -------------------------------- | -------- | ----------- | ---------------------------------------------------------------------- |
+| `modelValue`     | `boolean`                        | Yes      | -           | The checked state of the checkbox                                      |
+| `label`          | `string`                         | No       | `undefined` | Optional label text to display next to checkbox                        |
+| `labelPlacement` | `'left' \| 'right'`              | No       | `'left'`    | Position of the label relative to the checkbox                         |
+| `size`           | `'small' \| 'medium' \| 'large'` | No       | `'medium'`  | Size of the checkbox (small: 14×14px, medium: 16×16px, large: 18×18px) |
+| `disabled`       | `boolean`                        | No       | `false`     | Whether the checkbox is disabled                                       |
 
 ## Events
 
-| Event | Payload | Description |
-|-------|---------|-------------|
+| Event               | Payload   | Description                         |
+| ------------------- | --------- | ----------------------------------- |
 | `update:modelValue` | `boolean` | Emitted when checkbox state changes |
 
 ## Styling
 
 The component uses a flat, modern design with the extension's color palette:
+
 - Primary color: `#1D4990` (blue) - solid, no gradient
 - Unchecked border: `#d1d5db` (neutral gray)
 - Text color: `#374151` (dark gray)
@@ -147,6 +120,7 @@ The component uses a flat, modern design with the extension's color palette:
 - Font size: `12px` (matches surrounding text)
 
 The checkbox includes:
+
 - Flat design aesthetic with no shadows or elevation
 - Smooth scale animation for the checkmark
 - Focus outline for accessibility
