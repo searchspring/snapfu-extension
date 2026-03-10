@@ -1,22 +1,10 @@
 <template>
 	<label class="checkbox-wrapper" :class="[sizeClasses, { disabled, 'label-right': labelPlacement === 'right' }]">
 		<span v-if="label && labelPlacement === 'left'" class="checkbox-label">{{ label }}</span>
-		<input
-			type="checkbox"
-			:checked="modelValue"
-			:disabled="disabled"
-			@change="handleChange"
-			class="checkbox-input"
-		/>
+		<input type="checkbox" :checked="modelValue" :disabled="disabled" @change="handleChange" class="checkbox-input" />
 		<span class="checkbox-custom">
 			<svg class="checkbox-icon" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path
-					d="M1 5L4.5 8.5L11 1.5"
-					stroke="white"
-					stroke-width="2.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				/>
+				<path d="M1 5L4.5 8.5L11 1.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
 			</svg>
 		</span>
 		<span v-if="label && labelPlacement === 'right'" class="checkbox-label">{{ label }}</span>
@@ -37,7 +25,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
 	labelPlacement: 'left',
-	size: 'medium'
+	size: 'medium',
 });
 
 const emit = defineEmits<{
@@ -48,7 +36,7 @@ const sizeClasses = computed(() => {
 	return {
 		'size-small': props.size === 'small',
 		'size-medium': props.size === 'medium',
-		'size-large': props.size === 'large'
+		'size-large': props.size === 'large',
 	};
 });
 
@@ -80,8 +68,8 @@ function handleChange(event: Event) {
 		width: 0;
 
 		&:checked + .checkbox-custom {
-			background: #1D4990;
-			border-color: #1D4990;
+			background: #1d4990;
+			border-color: #1d4990;
 
 			.checkbox-icon {
 				opacity: 1;
@@ -104,7 +92,7 @@ function handleChange(event: Event) {
 		}
 
 		&:hover:not(:disabled) + .checkbox-custom {
-			border-color: #1D4990;
+			border-color: #1d4990;
 		}
 
 		&:checked:hover:not(:disabled) + .checkbox-custom {
