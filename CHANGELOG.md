@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/searchspring/snapfu-extension/compare/v1.6.0...v1.7.0) (2026-03-10)
+
+
+### Features
+
+* **data:** adding support for displaying the orgainization - searchspring or athos ([30cb908](https://github.com/searchspring/snapfu-extension/commit/30cb9081d2f8a180d5023c52d5776f724ad69ad7))
+* **settings:** adding "auto-enable" setting and adjusting some styling - format of all files ([2daabe6](https://github.com/searchspring/snapfu-extension/commit/2daabe6d9048e5234a42d8b3e6cae45f431d7fc6))
+
+
+### Bug Fixes
+
+* adding guard around checking hostname to ensure only real sites are stored ([b986a67](https://github.com/searchspring/snapfu-extension/commit/b986a6700d229b5053699c8fb32a6fd9a0b9d9e9))
+* **context:** restoring script ID for getContext ([09f4b7b](https://github.com/searchspring/snapfu-extension/commit/09f4b7b41608d8fee87eb9b220e24f86680e0378))
+* **hostname:** fixing a bug that occurred when switching hostnames on the same tab ([6c81ed1](https://github.com/searchspring/snapfu-extension/commit/6c81ed19f4ac3339aa55f94fc8c0b34b6dd31892))
+
 ## [1.6.0](https://github.com/searchspring/snapfu-extension/compare/v1.5.0...v1.6.0) (2026-01-21)
 
 

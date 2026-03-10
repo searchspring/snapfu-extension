@@ -1,1 +1,49 @@
-(function(){"use strict";const e=document.getElementById("snapfu-script"),t=e?.innerText||"",n=e?.getAttribute("url"),r=e?.getAttribute("injectionTarget")||"",o=document.createElement("script");function c(e){if(!e||""===e.trim()||"undefined"===e)return{element:window.document.documentElement,hadError:!1};const t=e.split(">>>").map((e=>e.trim()));let n=window.document,r=null;for(let c=0;c<t.length;c++){const e=t[c];if(c===t.length-1){r=n.querySelector(e);break}{const t=n.querySelector(e);if(!t)return{element:null,hadError:!0};try{const e=t.contentDocument||t.contentWindow?.document;if(!e)return{element:null,hadError:!0};n=e}catch(o){return{element:null,hadError:!0}}}}return r?{element:r,hadError:!1}:{element:null,hadError:!0}}o.id="searchspring-snapfu-script",o.src=n||"",o.innerHTML=t.trim(),o.addEventListener("error",(()=>{const e="Failed to load bundle!";let t="";n?.includes("localhost")||n?.includes("127.0.0.1")?t="Check certificate is trusted and local network access is allowed":n?.startsWith("https://")?t="Check network connection and CORS/CSP settings":n?.startsWith("http://")&&(t="Mixed content blocked? Try HTTPS");const r=new CustomEvent("snapfu-script-error",{detail:{error:{message:e,details:t,url:n},url:n,timestamp:Date.now()}});document.dispatchEvent(r)}));const{element:l,hadError:i}=c(r);l?l.appendChild(o):i&&window.document.documentElement?.appendChild(o)})();
+(function () {
+	'use strict';
+	const e = document.getElementById('searchspring-snapfu-script'),
+		t = e?.innerText || '',
+		n = e?.getAttribute('url'),
+		r = e?.getAttribute('injectionTarget') || '',
+		o = document.createElement('script');
+	function c(e) {
+		if (!e || '' === e.trim() || 'undefined' === e) return { element: window.document.documentElement, hadError: !1 };
+		const t = e.split('>>>').map((e) => e.trim());
+		let n = window.document,
+			r = null;
+		for (let c = 0; c < t.length; c++) {
+			const e = t[c];
+			if (c === t.length - 1) {
+				r = n.querySelector(e);
+				break;
+			}
+			{
+				const t = n.querySelector(e);
+				if (!t) return { element: null, hadError: !0 };
+				try {
+					const e = t.contentDocument || t.contentWindow?.document;
+					if (!e) return { element: null, hadError: !0 };
+					n = e;
+				} catch (o) {
+					return { element: null, hadError: !0 };
+				}
+			}
+		}
+		return r ? { element: r, hadError: !1 } : { element: null, hadError: !0 };
+	}
+	(o.id = 'searchspring-snapfu-script'),
+		(o.src = n || ''),
+		(o.innerHTML = t.trim()),
+		o.addEventListener('error', () => {
+			const e = 'Failed to load bundle!';
+			let t = '';
+			n?.includes('localhost') || n?.includes('127.0.0.1')
+				? (t = 'Check certificate is trusted and local network access is allowed')
+				: n?.startsWith('https://')
+				? (t = 'Check network connection and CORS/CSP settings')
+				: n?.startsWith('http://') && (t = 'Mixed content blocked? Try HTTPS');
+			const r = new CustomEvent('snapfu-script-error', { detail: { error: { message: e, details: t, url: n }, url: n, timestamp: Date.now() } });
+			document.dispatchEvent(r);
+		});
+	const { element: i, hadError: l } = c(r);
+	i ? i.appendChild(o) : l && window.document.documentElement?.appendChild(o);
+})();
